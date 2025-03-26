@@ -39,19 +39,11 @@
 
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
         public override bool Equals(object? obj) => Equals(obj as Option<T>);
-        internal const string none = "None";
-        public override string ToString() => $"{_value?.ToString() ?? none}";
+        internal const string _none = "None";
+        public override string ToString() => $"{_value?.ToString() ?? _none}";
     }
 
-    public class Some<T> : Option<T>
-        where T : class
-    {
-        public Some(T value) : base(value) { }
-    }
+    public class Some<T>(T value) : Option<T>(value) where T : class;
 
-    public class None<T> : Option<T>
-        where T : class
-    {
-        public None() : base(null) { }
-    }
+    public class None<T>() : Option<T>() where T : class;
 }
