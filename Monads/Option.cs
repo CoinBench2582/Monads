@@ -1,6 +1,6 @@
 ﻿namespace Monads
 {
-    public class Option<T>
+    public class Option<T> : IEquatable<Option<T>>
         where T : class
     {
         protected T? _value;
@@ -26,10 +26,23 @@
                 some(_value!);
             else
                 none();
-    }
+        }
 
         public R Resolve<R>(Func<T, R> some, Func<R> none)
             => HasValue ? some(_value) : none();
+
+        public bool Equals(Option<T>? other)
+            => other is not null && this.GetHashCode() == other.GetHashCode();
+        public static bool operator ==(Option<T>? self, Option<T>? other)
+            => self is null ? other is null : self.Equals(other);
+        public static bool operator !=(Option<T>? self, Option<T>? other) => !(self == other);
+
+        public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+        public override bool Equals(object? obj) => Equals(obj as Option<T>);
+        internal const string none = "None";
+        public override string ToString() => $"{_value?.ToString() ?? none}";
+    }
+
     public class Some<T> : Option<T>
         where T : class
     {
