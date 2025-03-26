@@ -16,4 +16,16 @@
 
         public static Option<T> None() => new(null);
     }
+
+    public class Some<T> : Option<T>
+        where T : class
+    {
+        public Some(T value) : base(value) { }
+    }
+
+    public class None<T> : Option<T>
+        where T : class
+    {
+        public None() : base(null) { }
+    }
 }
