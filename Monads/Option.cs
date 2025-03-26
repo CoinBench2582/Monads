@@ -20,16 +20,17 @@
         public Option<R> Bind<R>(Func<T, R> func) where R : class
             => HasValue ? new(func(_value)) : new();
 
-        public void Resolve(Action<T> some, Action none)
+        public void Inspect(Action<T> some, Action none)
         {
             if (HasValue)
-                some(_value!);
-            else
-                none();
+                some(_value);
+            else none();
         }
 
-        public R Resolve<R>(Func<T, R> some, Func<R> none)
+        public R Map<R>(Func<T, R> some, Func<R> none)
             => HasValue ? some(_value) : none();
+
+        public T Default(T orElse) => _value ?? orElse;
 
         public bool Equals(Option<T>? other)
             => other is not null && this.GetHashCode() == other.GetHashCode();
