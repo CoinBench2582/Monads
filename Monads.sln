@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monads", "Monads\Monads.csproj", "{42B4C9D4-D033-425B-93DD-B19E752A48DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonadsTests", "MonadsTests\MonadsTests.csproj", "{7B56F341-9A42-46A6-9811-E69521107A22}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42B4C9D4-D033-425B-93DD-B19E752A48DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42B4C9D4-D033-425B-93DD-B19E752A48DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42B4C9D4-D033-425B-93DD-B19E752A48DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42B4C9D4-D033-425B-93DD-B19E752A48DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B56F341-9A42-46A6-9811-E69521107A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B56F341-9A42-46A6-9811-E69521107A22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B56F341-9A42-46A6-9811-E69521107A22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B56F341-9A42-46A6-9811-E69521107A22}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FB7FE7A1-E4E6-44C6-8521-735DEEDC0B24}
+	EndGlobalSection
+EndGlobal
