@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Monads;
-
-using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+﻿using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Monads.Tests
 {
