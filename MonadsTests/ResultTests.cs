@@ -5,6 +5,9 @@ namespace Monads.Tests
     [TestClass]
     public class ResultTests
     {
+        private static Object testValue = new Object();
+        private static Exception testError = new Exception("Test exception");
+
         [TestMethod]
         public void IsOkTest() {
             var result = new Ok<Object,Exception>(new Object());
@@ -26,29 +29,26 @@ namespace Monads.Tests
 
         [TestMethod]
         public void UnwrapErrTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             try {
-                var _ = result.Unwrap;
+                _ = result.Unwrap;
                 Fail("Expected exception was not thrown");
             } catch (Exception ex) {
-                AreSame(error, ex);
+                AreSame(testError, ex);
             }
         }
 
         [TestMethod]
         public void ExpectTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
+            var result = new Ok<Object,Exception>(testValue);
             result.Expect("Error");
-            AreSame(value, result.Unwrap);
+            AreSame(testValue, result.Unwrap);
         }
 
         [TestMethod]
         public void ExpectErrTest() {
             var msg = "Error";
-            var error = new Exception("Some error...");
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             try {
                 result.Expect(msg);
                 Fail("Expected exception was not thrown");
@@ -59,73 +59,64 @@ namespace Monads.Tests
 
         [TestMethod]
         public void IsOkAndTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            var predicate = new Func<Object,bool>(v => v is not null);
+            var result = new Ok<Object,Exception>(testValue);
+            var predicate = (object v) => v is not null;
             IsTrue(result.IsOkAnd(predicate));
         }
 
         [TestMethod]
         public void IsOkAndFalseTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            var predicate = new Func<Object,bool>(v => v is null);
+            var result = new Ok<Object,Exception>(testValue);
+            var predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
 
         [TestMethod]
         public void IsErrAndTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
-            var predicate = new Func<Exception,bool>(e => e.Message == "Error");
+            var result = new Err<Object,Exception>(testError);
+            var predicate = (Exception e) => e.Message == "Error";
             IsTrue(result.IsErrAnd(predicate));
         }
 
         [TestMethod]
         public void IsErrAndFalseTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
-            var predicate = new Func<Exception,bool>(e => e.Message == "Different Error");
+            var result = new Err<Object,Exception>(testError);
+            var predicate = (Exception e) => e.Message == "Different Error";
             IsFalse(result.IsErrAnd(predicate));
         }
 
         [TestMethod]
         public void IsErrAndNullTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
-            var predicate = new Func<Exception,bool>(e => e is null);
+            var result = new Err<Object,Exception>(testError);
+            var predicate = (Exception e) => e is null;
             IsFalse(result.IsErrAnd(predicate));
         }
 
         [TestMethod]
         public void IsOkAndNullTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            var predicate = new Func<Object,bool>(v => v is null);
+            var result = new Ok<Object,Exception>(testValue);
+            var predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
 
         [TestMethod]
         public void IsOkAndNullPredicateTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            var predicate = new Func<Object,bool>(v => v is null);
+            var result = new Ok<Object,Exception>(testValue);
+            var predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
 
         [TestMethod]
         public void IsErrAndNullPredicateTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
-            var predicate = new Func<Exception,bool>(e => e is null);
+            var result = new Err<Object,Exception>(testError);
+            var predicate = (Exception e) => e is null;
             IsFalse(result.IsErrAnd(predicate));
         }
 
         [TestMethod]
         public void OkTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            IsTrue(result.Ok.Value == value);
+            var result = new Ok<Object,Exception>(testValue);
+            IsTrue(result.Ok.Value == testValue);
         }
 
         [TestMethod]
@@ -136,9 +127,8 @@ namespace Monads.Tests
 
         [TestMethod]
         public void ErrTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
-            IsTrue(result.Err.Value == error);
+            var result = new Err<Object,Exception>(testError);
+            IsTrue(result.Err.Value == testError);
         }
 
         [TestMethod]
@@ -149,82 +139,74 @@ namespace Monads.Tests
 
         [TestMethod]
         public void MapTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
+            var result = new Ok<Object,Exception>(testValue);
             var mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsOk);
-            AreNotSame(value, mappedResult.Unwrap);
+            AreNotSame(testValue, mappedResult.Unwrap);
         }
 
         [TestMethod]
         public void MapErrorTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             var mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsErr);
             try {
-                var _ = mappedResult.Unwrap;
+                _ = mappedResult.Unwrap;
                 Fail("Expected exception was not thrown");
             } catch (Exception ex) {
-                AreSame(error, ex);
+                AreSame(testError, ex);
             }
         }
 
         [TestMethod]
         public void MapOrTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
+            var result = new Ok<Object,Exception>(testValue);
             var mappedResult = result.MapOr(v => v.ToString()!, new Object());
-            AreSame(value.ToString(), mappedResult);
+            AreSame(testValue.ToString(), mappedResult);
         }
 
         [TestMethod]
         public void MapOrTestNull() {
-            var error = new Exception("Error");
             var defaultValue = new Object();
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             var mappedResult = result.MapOr(v => v.ToString()!, defaultValue);
             AreSame(defaultValue, mappedResult);
         }
 
         [TestMethod]
         public void MapOrElseTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
+            var result = new Ok<Object,Exception>(testValue);
             var mappedResult = result.MapOrElse(v => v.ToString()!, e => e.Message);
-            AreSame(value.ToString(), mappedResult);
+            AreSame(testValue.ToString(), mappedResult);
         }
 
         [TestMethod]
         public void MapOrElseTestNull() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             var mappedResult = result.MapOrElse(v => v.ToString()!, e => e.Message);
-            AreSame(error.Message, mappedResult);
+            AreSame(testError.Message, mappedResult);
         }
 
         [TestMethod]
         public void MapErrTest() {
-            var error = new Exception("Error");
-            var result = new Err<Object,Exception>(error);
+            var result = new Err<Object,Exception>(testError);
             var mappedResult = result.MapErr(e => new Exception("Mapped Error"));
             IsTrue(mappedResult.IsErr);
             try {
-                var _ = mappedResult.Unwrap;
+                _ = mappedResult.Unwrap;
                 Fail("Expected exception was not thrown");
             } catch (Exception ex) {
-                AreNotSame(error, ex);
+                AreNotSame(testError, ex);
                 AreSame(ex.Message, "Mapped Error");
             }
         }
 
         [TestMethod]
         public void MapErrTestNull() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
+            var result = new Ok<Object,Exception>(testValue);
             var mappedResult = result.MapErr(e => new Exception("Mapped Error"));
             IsTrue(mappedResult.IsOk);
-            AreSame(value, mappedResult.Unwrap);
+            AreSame(testValue, mappedResult.Unwrap);
         }
     }
 }
