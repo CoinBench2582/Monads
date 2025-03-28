@@ -11,28 +11,28 @@ namespace Monads.Tests
         [TestMethod]
         public void IsOkTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             IsTrue(result.IsOk);
         }
 
         [TestMethod]
         public void IsErrorTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             IsTrue(result.IsError);
         }
 
         [TestMethod]
         public void UnwrapTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             AreSame(_testValue, result.Unwrap);
         }
 
         [TestMethod]
         public void UnwrapErrorTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             try
             {
                 _ = result.Unwrap;
@@ -47,7 +47,7 @@ namespace Monads.Tests
         [TestMethod]
         public void ExpectTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             result.Expect("Error");
             AreSame(_testValue, result.Unwrap);
         }
@@ -56,7 +56,7 @@ namespace Monads.Tests
         public void ExpectErrorTest()
         {
             string msg = "Error";
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             try
             {
                 result.Expect(msg);
@@ -71,7 +71,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsOkAndTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Func<object, bool> predicate = (object v) => v is not null;
             IsTrue(result.IsOkAnd(predicate));
         }
@@ -79,7 +79,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsOkAndFalseTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Func<object, bool> predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
@@ -87,7 +87,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsErrorAndTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             Func<Exception, bool> predicate = (Exception e) => e.Message == _testError.Message;
             IsTrue(result.IsErrorAnd(predicate));
         }
@@ -95,7 +95,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsErrorAndFalseTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             Func<Exception, bool> predicate = (Exception e) => e.Message == "Different Error";
             IsFalse(result.IsErrorAnd(predicate));
         }
@@ -103,7 +103,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsErrorAndNullTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             Func<Exception, bool> predicate = (Exception e) => e is null;
             IsFalse(result.IsErrorAnd(predicate));
         }
@@ -111,7 +111,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsOkAndNullTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Func<object, bool> predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
@@ -119,7 +119,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsOkAndNullPredicateTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Func<object, bool> predicate = (object v) => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
@@ -127,7 +127,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsErrorAndNullPredicateTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             Func<Exception, bool> predicate = (Exception e) => e is null;
             IsFalse(result.IsErrorAnd(predicate));
         }
@@ -135,35 +135,35 @@ namespace Monads.Tests
         [TestMethod]
         public void OkTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             IsTrue(result.Ok.Value == _testValue);
         }
 
         [TestMethod]
         public void OkNullTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             IsFalse(result.Ok.HasValue);
         }
 
         [TestMethod]
         public void ErrorTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             IsTrue(result.Error.Value == _testError);
         }
 
         [TestMethod]
         public void ErrorNullTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             IsFalse(result.Error.HasValue);
         }
 
         [TestMethod]
         public void MapTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Result<string, Exception> mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsOk);
             AreNotSame(_testValue, mappedResult.Unwrap);
@@ -172,7 +172,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapErrorTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             Result<string, Exception> mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsError);
             try
@@ -189,7 +189,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapOrTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             object mappedResult = result.MapOr(v => v.ToString()!, new object());
             AreSame(_testValue.ToString(), mappedResult);
         }
@@ -197,7 +197,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapOrNullTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             object mappedResult = result.MapOr(v => v.ToString()!, _testValue);
             AreSame(_testValue, mappedResult);
         }
@@ -205,7 +205,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapOrElseTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             string mappedResult = result.MapOrElse(v => v.ToString()!, e => e.Message);
             AreSame(_testValue.ToString(), mappedResult);
         }
@@ -213,7 +213,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapOrElseNullTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             string mappedResult = result.MapOrElse(v => v.ToString()!, e => e.Message);
             AreSame(_testError.Message, mappedResult);
         }
@@ -221,7 +221,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapErrorDiffTest()
         {
-            Error<object, Exception> result = new(_testError);
+            Result<object, Exception> result = new Error<object, Exception>(_testError);
             const string message = "Mapped Error";
             Result<object, Exception> mappedResult = result.MapError(e => new Exception(message));
             IsTrue(mappedResult.IsError);
@@ -240,7 +240,7 @@ namespace Monads.Tests
         [TestMethod]
         public void MapErrorNullTest()
         {
-            Ok<object, Exception> result = new(_testValue);
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Result<object, Exception> mappedResult = result.MapError(e => new Exception("Mapped Error"));
             IsTrue(mappedResult.IsOk);
             AreSame(_testValue, mappedResult.Unwrap);
