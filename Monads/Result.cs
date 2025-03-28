@@ -7,7 +7,7 @@ namespace Monads
     /// </summary>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    class Result<T,E> where E:Exception where T:class {
+    public class Result<T,E> where E:Exception where T:class {
         T? value;
         E? error;
 
@@ -161,7 +161,7 @@ namespace Monads
     /// </summary>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    class Ok<T,E> : Result<T,E> where E:Exception where T:class {
+    public class Ok<T,E> : Result<T,E> where E:Exception where T:class {
         public Ok(T v) : base(v) {}
     }
 
@@ -170,7 +170,7 @@ namespace Monads
     /// </summary>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    class Err<T,E> : Result<T,E> where E:Exception where T:class {
+    public class Err<T,E> : Result<T,E> where E:Exception where T:class {
         public Err(E e) : base(e) {}
     }
 }
