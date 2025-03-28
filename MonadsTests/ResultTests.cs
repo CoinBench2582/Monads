@@ -206,5 +206,39 @@ namespace Monads.Tests
             IsTrue(mappedResult.IsOk);
             AreSame(testValue, mappedResult.Unwrap);
         }
+
+        [TestMethod]
+        public void TryExecuteSucceedTest()
+        {
+            var testFunc = static () => "ahoj";
+            var result = testFunc.TryExecute<string, Exception>();
+            IsTrue(result.IsOk);
+        }
+
+        [TestMethod]
+        public void TryExecuteFailTest()
+        {
+            var testFunc = static () => false ? string.Empty : throw new InvalidOperationException();
+            var result = testFunc.TryExecute<string, InvalidOperationException>();
+            IsTrue(result.IsErr);
+        }
+
+        [TestMethod]
+        public void TryExecuteUnexpectedTest()
+        {
+            ArgumentException exception = new(); 
+            var testFunc = () => false ? string.Empty : throw exception;
+            Result<string, InvalidOperationException> result = default!;
+            try
+            {
+                result = testFunc.TryExecute<string, InvalidOperationException>();
+                Fail("Didn't throw");
+            }
+            catch (Exception e)
+            {
+                AreEqual(exception, e.InnerException);
+            }
+            IsNull(result);
+        }
     }
 }
