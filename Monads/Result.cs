@@ -7,12 +7,15 @@ namespace Monads
     /// </summary>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    public class Result<T,E> where E:Exception where T:class {
+    public class Result<T, E>
+        where E : Exception
+        where T : class
+    {
         protected T? _value;
         protected E? _error;
 
-        private protected Result(T v) => _value = v;
-        private protected Result(E e) => _error = e;
+        protected Result(T v) => _value = v;
+        protected Result(E e) => _error = e;
 
         /// <summary>
         /// Returns true if the result is Ok
@@ -159,18 +162,20 @@ namespace Monads
     /// <summary>
     /// Represents a successful result
     /// </summary>
+    /// <param name="v">Value to return</param>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    public class Ok<T,E> : Result<T,E> where E:Exception where T:class {
-        public Ok(T v) : base(v) {}
-    }
+    public class Ok<T, E>(T v) : Result<T, E>(v)
+        where E : Exception
+        where T : class;
 
     /// <summary>
     /// Represents a failed result
     /// </summary>
+    /// <param name="e">Error to return</param>
     /// <typeparam name="T">The type of the value</typeparam>
     /// <typeparam name="E">The type of the exception</typeparam>
-    public class Err<T,E> : Result<T,E> where E:Exception where T:class {
-        public Err(E e) : base(e) {}
-    }
+    public class Err<T, E>(E e) : Result<T, E>(e)
+        where E : Exception
+        where T : class;
 }
