@@ -74,7 +74,7 @@ namespace Monads.Tests
         [TestMethod]
         public void IsErrAndTest() {
             var result = new Err<Object,Exception>(testError);
-            var predicate = (Exception e) => e.Message == "Error";
+            var predicate = (Exception e) => e.Message == testError.Message;
             IsTrue(result.IsErrAnd(predicate));
         }
 
