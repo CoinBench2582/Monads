@@ -10,21 +10,20 @@ namespace Monads.Tests
 
         [TestMethod]
         public void IsOkTest() {
-            var result = new Ok<Object,Exception>(new Object());
+            var result = new Ok<Object,Exception>(testValue);
             IsTrue(result.IsOk);
         }
 
         [TestMethod]
         public void IsErrTest() {
-            var result = new Err<Object,Exception>(new Exception("Error"));
+            var result = new Err<Object,Exception>(testError);
             IsTrue(result.IsErr);
         }
 
         [TestMethod]
         public void UnwrapTest() {
-            var value = new Object();
-            var result = new Ok<Object,Exception>(value);
-            AreSame(value, result.Unwrap);
+            var result = new Ok<Object,Exception>(testValue);
+            AreSame(testValue, result.Unwrap);
         }
 
         [TestMethod]
@@ -121,7 +120,7 @@ namespace Monads.Tests
 
         [TestMethod]
         public void OkTestNull() {
-            var result = new Err<Object,Exception>(new Exception("Error"));
+            var result = new Err<Object,Exception>(testError);
             IsFalse(result.Ok.HasValue);
         }
 
@@ -133,7 +132,7 @@ namespace Monads.Tests
 
         [TestMethod]
         public void ErrTestNull() {
-            var result = new Ok<Object,Exception>(new Object());
+            var result = new Ok<Object,Exception>(testValue);
             IsFalse(result.Err.HasValue);
         }
 
@@ -167,10 +166,9 @@ namespace Monads.Tests
 
         [TestMethod]
         public void MapOrTestNull() {
-            var defaultValue = new Object();
             var result = new Err<Object,Exception>(testError);
-            var mappedResult = result.MapOr(v => v.ToString()!, defaultValue);
-            AreSame(defaultValue, mappedResult);
+            var mappedResult = result.MapOr(v => v.ToString()!, testValue);
+            AreSame(testValue, mappedResult);
         }
 
         [TestMethod]
