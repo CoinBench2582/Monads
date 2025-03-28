@@ -52,8 +52,7 @@ namespace Monads
         /// <param name="msg">The message to include in the exception</param>
         /// <exception cref="Exception">The exception with the given message</exception>
         public void Expect(string msg) {
-            if (IsErr)
-                throw new Exception(msg);
+            if (IsErr) throw new Exception(msg);
         }
 
         /// <summary>
@@ -64,7 +63,7 @@ namespace Monads
         /// <see langword="true"/> if the result is Ok and the value satisfies the predicate.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool IsOkAnd(Func<T,bool> f) => IsOk && f(_value);
+        public bool IsOkAnd(Func<T, bool> f) => IsOk && f(_value);
 
         /// <summary>
         /// Returns true if the result is Err and the error satisfies the predicate
@@ -74,7 +73,7 @@ namespace Monads
         /// <see langword="true"/> if the result is Err and the error satisfies the predicate.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool IsErrAnd(Func<E,bool> f) => IsErr && f(_error);
+        public bool IsErrAnd(Func<E, bool> f) => IsErr && f(_error);
 
         /// <summary>
         /// Returns an Option containing the value. Ok if the result is Ok, otherwise None.
@@ -94,7 +93,8 @@ namespace Monads
         /// <param name="op">The function to map the value to a new value</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>A new Result containing the mapped value if the result is Ok, otherwise a new Err containing the mapped error</returns>
-        public Result<U,E> Map<U>(Func<T,U> op) where U:class => IsOk ? new Ok<U,E>(op(_value)) : new Err<U,E>(_error);
+        public Result<U, E> Map<U>(Func<T, U> op) where U : class
+            => IsOk ? new Ok<U, E>(op(_value)) : new Err<U, E>(_error);
 
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise returns a default value
@@ -103,7 +103,7 @@ namespace Monads
         /// <param name="def">The default value to return if the result is an error</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the default value</returns>
-        public U MapOr<U>(Func<T,U> op, U def) => IsOk ? op(_value) : def;
+        public U MapOr<U>(Func<T, U> op, U def) => IsOk ? op(_value) : def;
 
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise maps the error to a new value
@@ -112,7 +112,8 @@ namespace Monads
         /// <param name="cb">The function to map the error to a new value</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the mapped error</returns>
-        public U MapOrElse<U>(Func<T,U> op, Func<E,U> cb) => IsOk ? op(_value) : cb(_error);
+        public U MapOrElse<U>(Func<T, U> op, Func<E, U> cb)
+            => IsOk ? op(_value) : cb(_error);
 
         /// <summary>
         /// Maps the error of the result to a new error if the result is Err, otherwise maps the value to a new Ok
@@ -120,16 +121,16 @@ namespace Monads
         /// <param name="op">The function to map the error to a new error</param>
         /// <typeparam name="F">The type of the new error</typeparam>
         /// <returns>A new Err containing the mapped error if the result is Err, otherwise a new Ok containing the mapped value</returns>
-        public Result<T,F> MapErr<F>(Func<E,F> op) where F:Exception => IsOk ? new Ok<T,F>(_value) : new Err<T,F>(op(_error));
+        public Result<T, F> MapErr<F>(Func<E, F> op) where F : Exception
+            => IsOk ? new Ok<T, F>(_value) : new Err<T, F>(op(_error));
 
         /// <summary>
         /// Executes an action on the value if the result is Ok
         /// </summary>
         /// <param name="op">The action to execute on the value</param>
         /// <returns>Self</returns>
-        public Result<T,E> Inspect(Action<T> op) {
-            if (IsOk)
-                op(_value);
+        public Result<T, E> Inspect(Action<T> op) {
+            if (IsOk) op(_value);
             return this;
         }
 
@@ -138,9 +139,8 @@ namespace Monads
         /// </summary>
         /// <param name="op">The action to execute on the error</param>
         /// <returns>Self</returns>
-        public Result<T,E> InspectErr(Action<E> op) {
-            if (!IsOk)
-                op(_error);
+        public Result<T, E> InspectErr(Action<E> op) {
+            if (!IsOk) op(_error);
             return this;
         }
 
@@ -151,11 +151,15 @@ namespace Monads
         /// <returns>A new Result containing the result of the function if it executes successfully, otherwise a new Err containing the exception</returns>
         /// <typeparam name="T">The type of the value</typeparam>
         /// <typeparam name="E">The type of the exception</typeparam>
-        public static Result<T,E> Exec(Func<T> f) {
-            try {
-                return new Ok<T,E>(f());
-            } catch (E e) {
-                return new Err<T,E>(e);
+        /// <exception cref="Exception">An unexpected type of exception was thrown.</exception>
+        public static Result<T, E> Exec(Func<T> f) {
+            try
+            {
+                return new Ok<T, E>(f());
+            }
+            catch (E e)
+            {
+                return new Err<T, E>(e);
             }
         }
     }
