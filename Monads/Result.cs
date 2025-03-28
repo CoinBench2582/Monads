@@ -143,25 +143,6 @@ namespace Monads
             if (!IsOk) op(_error);
             return this;
         }
-
-        /// <summary>
-        /// Executes a function and wraps the result in Ok if the function executes successfully, otherwise wraps the exception in Err
-        /// </summary>
-        /// <param name="f">The function to execute</param>
-        /// <returns>A new Result containing the result of the function if it executes successfully, otherwise a new Err containing the exception</returns>
-        /// <typeparam name="T">The type of the value</typeparam>
-        /// <typeparam name="E">The type of the exception</typeparam>
-        /// <exception cref="Exception">An unexpected type of exception was thrown.</exception>
-        public static Result<T, E> Exec(Func<T> f) {
-            try
-            {
-                return new Ok<T, E>(f());
-            }
-            catch (E e)
-            {
-                return new Err<T, E>(e);
-            }
-        }
     }
 
     /// <summary>
@@ -183,4 +164,33 @@ namespace Monads
     public class Err<T, E>(E e) : Result<T, E>(e)
         where E : Exception
         where T : class;
+
+    public static class ResultExtensions
+    {
+        /// <summary>
+        /// Executes a function and wraps the result in Ok if the function executes successfully, otherwise wraps the exception in Err
+        /// </summary>
+        /// <param name="f">The function to execute</param>
+        /// <returns>A new Result containing the result of the function if it executes successfully, otherwise a new Err containing the exception</returns>
+        /// <typeparam name="T">The type of the value</typeparam>
+        /// <typeparam name="E">The type of the exception</typeparam>
+        /// <exception cref="Exception">An unexpected type of exception was thrown.</exception>
+        public static Result<T, E> TryExecute<T, E>(this Func<T> f)
+            where E : Exception
+            where T : class
+        {
+            try
+            {
+                return new Ok<T, E>(f());
+            }
+            catch (E e)
+            {
+                return new Err<T, E>(e);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unexpected exception encountered", e);
+            }
+        }
+    }
 }
