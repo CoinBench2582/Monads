@@ -49,31 +49,32 @@ namespace Monads
         /// <summary>
         /// Unwraps the result, throwing an exception with the given message if the result is an error
         /// </summary>
-        /// <param name="msg">The message to include in the exception</param>
+        /// <param name="message">The message to include in the exception</param>
         /// <exception cref="Exception">The exception with the given message</exception>
-        public void Expect(string msg) {
-            if (IsError) throw new Exception(msg);
+        public void Expect(string message)
+        {
+            if (IsError) throw new Exception(message);
         }
 
         /// <summary>
         /// Returns <see langword="true"/> if the result is Ok and the value satisfies the predicate
         /// </summary>
-        /// <param name="f">The predicate to test the value against</param>
+        /// <param name="predicate">The predicate to test the value against</param>
         /// <returns>
         /// <see langword="true"/> if the result is Ok and the value satisfies the predicate.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool IsOkAnd(Func<T, bool> f) => IsOk && f(_value);
+        public bool IsOkAnd(Func<T, bool> predicate) => IsOk && predicate(_value);
 
         /// <summary>
         /// Returns true if the result is Error and the error satisfies the predicate
         /// </summary>
-        /// <param name="f">The predicate to test the error against</param>
+        /// <param name="predicate">The predicate to test the error against</param>
         /// <returns>
         /// <see langword="true"/> if the result is Error and the error satisfies the predicate.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool IsErrorAnd(Func<E, bool> f) => IsError && f(_error);
+        public bool IsErrorAnd(Func<E, bool> predicate) => IsError && predicate(_error);
 
         /// <summary>
         /// Returns an Option containing the value. Ok if the result is Ok, otherwise None.
@@ -90,57 +91,59 @@ namespace Monads
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise maps the error to a new Error
         /// </summary>
-        /// <param name="op">The function to map the value to a new value</param>
+        /// <param name="operation">The function to map the value to a new value</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>A new Result containing the mapped value if the result is Ok, otherwise a new Error containing the mapped error</returns>
-        public Result<U, E> Map<U>(Func<T, U> op) where U : class
-            => IsOk ? new Ok<U, E>(op(_value)) : new Error<U, E>(_error);
+        public Result<U, E> Map<U>(Func<T, U> operation) where U : class
+            => IsOk ? new Ok<U, E>(operation(_value)) : new Error<U, E>(_error);
 
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise returns a default value
         /// </summary>
-        /// <param name="op">The function to map the value to a new value</param>
-        /// <param name="def">The default value to return if the result is an error</param>
+        /// <param name="operation">The function to map the value to a new value</param>
+        /// <param name="default">The default value to return if the result is an error</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the default value</returns>
-        public U MapOr<U>(Func<T, U> op, U def) => IsOk ? op(_value) : def;
+        public U MapOr<U>(Func<T, U> operation, U @default) => IsOk ? operation(_value) : @default;
 
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise maps the error to a new value
         /// </summary>
-        /// <param name="op">The function to map the value to a new value</param>
-        /// <param name="cb">The function to map the error to a new value</param>
+        /// <param name="operation">The function to map the value to a new value</param>
+        /// <param name="else_cb">The function to map the error to a new value</param>
         /// <typeparam name="U">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the mapped error</returns>
-        public U MapOrElse<U>(Func<T, U> op, Func<E, U> cb)
-            => IsOk ? op(_value) : cb(_error);
+        public U MapOrElse<U>(Func<T, U> operation, Func<E, U> else_cb)
+            => IsOk ? operation(_value) : else_cb(_error);
 
         /// <summary>
         /// Maps the error of the result to a new error if the result is Error, otherwise maps the value to a new Ok
         /// </summary>
-        /// <param name="op">The function to map the error to a new error</param>
+        /// <param name="operation">The function to map the error to a new error</param>
         /// <typeparam name="F">The type of the new error</typeparam>
         /// <returns>A new Error containing the mapped error if the result is Error, otherwise a new Ok containing the mapped value</returns>
-        public Result<T, F> MapError<F>(Func<E, F> op) where F : Exception
-            => IsOk ? new Ok<T, F>(_value) : new Error<T, F>(op(_error));
+        public Result<T, F> MapError<F>(Func<E, F> operation) where F : Exception
+            => IsOk ? new Ok<T, F>(_value) : new Error<T, F>(operation(_error));
 
         /// <summary>
         /// Executes an action on the value if the result is Ok
         /// </summary>
-        /// <param name="op">The action to execute on the value</param>
+        /// <param name="operation">The action to execute on the value</param>
         /// <returns>Self</returns>
-        public Result<T, E> Inspect(Action<T> op) {
-            if (IsOk) op(_value);
+        public Result<T, E> Inspect(Action<T> operation)
+        {
+            if (IsOk) operation(_value);
             return this;
         }
 
         /// <summary>
         /// Executes an action on the error if the result is Error
         /// </summary>
-        /// <param name="op">The action to execute on the error</param>
+        /// <param name="operation">The action to execute on the error</param>
         /// <returns>Self</returns>
-        public Result<T, E> InspectError(Action<E> op) {
-            if (!IsOk) op(_error);
+        public Result<T, E> InspectError(Action<E> operation)
+        {
+            if (!IsOk) operation(_error);
             return this;
         }
     }
