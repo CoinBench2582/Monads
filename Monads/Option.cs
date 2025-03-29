@@ -160,7 +160,7 @@
         /// </returns>
         //[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(_value))]
-        public bool HasValue => _value is not null;
+        public bool HasValue => _value.HasValue;
 
         protected ValueOption(T? value = null) => _value = value;
 
@@ -175,7 +175,7 @@
         /// Creates an <see cref="ValueOption{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="ValueOption{T}"/> containing nothing</returns>
-        public static ValueOption<T> None() => new(null);
+        public static ValueOption<T> None() => new();
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -187,7 +187,7 @@
         /// If there was no value, returns an <see cref="ValueOption{R}.None"/>.
         /// </returns>
         public ValueOption<R> Bind<R>(Func<T, R> func) where R : struct
-            => HasValue ? new(func(_value!.Value)) : new();
+            => HasValue ? new(func(_value.Value)) : new();
 
         /// <summary>
         /// Performs one of the actions,
@@ -213,7 +213,7 @@
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
         public R Map<R>(Func<T, R> some, Func<R> none)
-            => HasValue ? some(_value!.Value) : none();
+            => HasValue ? some(_value.Value) : none();
 
         /// <summary>
         /// Tries to return the underlying value.
