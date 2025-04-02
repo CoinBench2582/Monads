@@ -6,6 +6,57 @@ namespace Monads.Tests
     public class OptionTests
     {
         [TestMethod]
-        public void ExistsTest() => IsTrue(true);
+        public void SomeTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void NoneTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void BindTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void InspectTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void MapTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void ValueOrDefaultTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void EqualsTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void GetHashCodeTest()
+        {
+            //throw new NotImplementedException();
+        }
+
+        [TestMethod]
+        public void ToStringTest()
+        {
+            //throw new NotImplementedException();
+        }
     }
 }
