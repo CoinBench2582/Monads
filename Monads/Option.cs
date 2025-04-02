@@ -35,13 +35,13 @@
         /// </summary>
         /// <param name="value">value to store</param>
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
-        public static Option<T> Some(T value) => new(value);
+        public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
         /// <summary>
         /// Creates an <see cref="Option{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
-        public static Option<T> None() => new(null);
+        public static Option<T> None() => new();
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
