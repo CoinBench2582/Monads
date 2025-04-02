@@ -5,6 +5,29 @@ namespace Monads.Tests
     [TestClass]
     public class OptionTests
     {
+#pragma warning disable CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
+        // Set in Prepare
+        private static object _faulty;
+        private static object _fine;
+#pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
+
+        // public TestContext TestContext { get; set; }
+
+        [ClassInitialize]
+        public static void Prepare(TestContext context)
+        {
+            _fine = new();
+            _faulty = null!;            
+            Console.WriteLine($"Started {nameof(OptionTests)}");
+        }
+
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        public static void Cleanup()
+        {
+            _fine = null!;
+            Console.WriteLine($"Ended {nameof(OptionTests)}");
+        }
+
         [TestMethod]
         public void SomeTest()
         {
