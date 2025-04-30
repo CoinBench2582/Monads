@@ -1,4 +1,5 @@
-﻿using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+﻿using System.Diagnostics.CodeAnalysis;
+using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Monads.Tests
 {
@@ -77,13 +78,17 @@ namespace Monads.Tests
         [TestMethod]
         public void EqualsTest()
         {
-            //throw new NotImplementedException();
-        }
+            Option<object> someO = Option<object>.Some(_fine);
+            Option<object> someC = new Some<object>(_fine);
+            IsTrue(someO.Equals((object)someC)); IsTrue(someC.Equals((object)someO));
+            IsTrue(someO.Equals(someC)); IsTrue(someC.Equals(someO));
+            IsFalse(someO != someC); IsFalse(someC != someO);
 
-        [TestMethod]
-        public void GetHashCodeTest()
-        {
-            //throw new NotImplementedException();
+            Option<object> noneO = Option<object>.None();
+            Option<object> noneC = new None<object>();
+            IsTrue(noneO.Equals((object)noneC)); IsTrue(noneC.Equals((object)noneO));
+            IsTrue(noneO.Equals(noneC)); IsTrue(noneC.Equals(noneO));
+            IsFalse(noneO != noneC); IsFalse(noneC != noneO);
         }
 
         [TestMethod]
