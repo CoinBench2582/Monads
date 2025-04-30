@@ -31,7 +31,13 @@ namespace Monads.Tests
         [TestMethod]
         public void SomeTest()
         {
-            //throw new NotImplementedException();
+            Option<object> someO = Option<object>.Some(_fine);
+            Option<object> someC = new Some<object>(_fine);
+            IsNotNull(someO); IsNotNull(someC);
+            IsTrue(someO.HasValue); IsTrue(someC.HasValue);
+
+            _ = ThrowsException<ArgumentNullException>(() => Option<object>.Some(_faulty));
+            _ = ThrowsException<ArgumentNullException>(() => _ = new Some<object>(_faulty));
         }
 
         [TestMethod]
