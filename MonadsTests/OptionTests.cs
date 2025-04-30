@@ -43,7 +43,9 @@ namespace Monads.Tests
         [TestMethod]
         public void NoneTest()
         {
-            //throw new NotImplementedException();
+            Option<object> noneO = Option<object>.None();
+            Option<object> noneC = new None<object>();
+            IsFalse(noneO.HasValue); IsFalse(noneC.HasValue);
         }
 
         [TestMethod]
