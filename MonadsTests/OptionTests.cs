@@ -9,6 +9,8 @@ namespace Monads.Tests
         // Set in Prepare
         private static object _faulty;
         private static object _fine;
+        private const string _testString = "Ahoj";
+        internal const string _none = "None";
 #pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
 
         // public TestContext TestContext { get; set; }
@@ -16,8 +18,8 @@ namespace Monads.Tests
         [ClassInitialize]
         public static void Prepare(TestContext context)
         {
-            _fine = new();
-            _faulty = null!;            
+            _fine = _testString;
+            _faulty = null!;
             Console.WriteLine($"Started {nameof(OptionTests)}");
         }
 
@@ -87,7 +89,11 @@ namespace Monads.Tests
         [TestMethod]
         public void ToStringTest()
         {
-            //throw new NotImplementedException();
+            Option<object> some = Option<object>.Some(_fine);
+            AreEqual(_fine.ToString(), some.ToString());
+
+            Option<object> none = Option<object>.None();
+            AreEqual(_none, none.ToString());
         }
     }
 }
