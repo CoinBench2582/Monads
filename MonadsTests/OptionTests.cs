@@ -72,7 +72,17 @@ namespace Monads.Tests
         [TestMethod]
         public void ValueOrDefaultTest()
         {
-            //throw new NotImplementedException();
+            object the = new();
+            Option<object> obj = Option<object>.Some(the);
+            Option<string> str = Option<string>.Some((string)_fine);
+            AreEqual(the, obj.ValueOrDefault(_testString));
+            AreEqual(_testString, str.ValueOrDefault(the.ToString()!));
+
+            Option<object> noObj = Option<object>.None();
+            Option<string> noStr = Option<string>.None();
+            AreEqual(the, noObj.ValueOrDefault(the));
+            AreEqual(_testString, noObj.ValueOrDefault(_testString));
+            AreEqual(_testString, noStr.ValueOrDefault(_testString));
         }
 
         [TestMethod]
