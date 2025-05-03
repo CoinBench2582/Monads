@@ -57,7 +57,21 @@ namespace Monads.Tests
         [TestMethod]
         public void BindTest()
         {
-            //throw new NotImplementedException();
+            Option<string> someInit = Option<string>.Some((string)_fine);
+            Option<string> someNext = someInit.Bind(s  => string.Concat(s, " světe"));
+            Option<string> someLast = someNext.Bind(s => string.Concat(s, "!"));
+            const string mid = _testString + " světe";
+            const string end = mid + "!";
+            IsTrue(someNext.HasValue && someLast.HasValue);
+            AreEqual(mid, someNext.Value);
+            AreEqual(end, someLast.Value);
+
+            Option<string> noneInit = Option<string>.None();
+            Option<string> noneNext = noneInit.Bind(s => string.Concat(s, " světe"));
+            Option<string> noneLast = noneNext.Bind(s => string.Concat(s, "!"));
+            IsFalse(noneNext.HasValue); IsFalse(noneLast.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
         }
 
         [TestMethod]
