@@ -128,7 +128,7 @@
         public override bool Equals(object? obj) => Equals(obj as Option<T>);
         internal const string _none = "None";
         /// <inheritdoc cref="object.ToString"/>
-        public override string ToString() => $"{_value?.ToString() ?? _none}";
+        public override string ToString() => _value?.ToString() ?? _none;
     }
 
     /// <summary>
