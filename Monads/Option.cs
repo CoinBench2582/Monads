@@ -90,7 +90,7 @@
         /// Otherwise, <paramref name="orElse"/> is returned.
         /// </returns>
         public T ValueOrDefault(T orElse) => _value ?? orElse;
-        
+
         /// <summary>
         /// Creates a new <see cref="Option{T}"/> object, wrapping the provided <paramref name="value"/>.
         /// </summary>
@@ -100,7 +100,7 @@
         /// Otherwise a <see cref="Option{T}.None"/>.
         /// </returns>
         public static implicit operator Option<T>(T? value) => new(value);
-        
+
         /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
         public bool Equals(Option<T>? other)
             => other is not null && this.GetHashCode() == other.GetHashCode();
