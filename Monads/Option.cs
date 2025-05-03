@@ -126,10 +126,12 @@
     /// </summary>
     /// <typeparam name="T">the desired underlying type</typeparam>
     /// <param name="value">value to store</param>
-    public class Some<T>(T value) : Option<T>(value ?? throw new ArgumentNullException(nameof(value))) where T : class;
+    public class Some<T>(T value)
+        : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
+        where T : class;
 
     /// <summary>
-    /// A shorthnd to create an <see cref="Option{T}.None"/>
+    /// A shorthand to create an <see cref="Option{T}.None"/>
     /// </summary>
     /// <typeparam name="T">the type of the value that is missing</typeparam>
     public class None<T>() : Option<T>() where T : class;
