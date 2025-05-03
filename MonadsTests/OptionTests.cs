@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+﻿using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace Monads.Tests
 {
@@ -17,6 +16,7 @@ namespace Monads.Tests
         // public TestContext TestContext { get; set; }
 
         [ClassInitialize]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
         public static void Prepare(TestContext context)
         {
             _fine = _testString;
@@ -36,8 +36,9 @@ namespace Monads.Tests
         {
             Option<object> someO = Option<object>.Some(_fine);
             Option<object> someC = new Some<object>(_fine);
-            IsNotNull(someO); IsNotNull(someC);
             IsTrue(someO.HasValue); IsTrue(someC.HasValue);
+            _ = someO.Value;
+            _ = someC.Value;
 
             _ = ThrowsException<ArgumentNullException>(() => Option<object>.Some(_faulty));
             _ = ThrowsException<ArgumentNullException>(() => _ = new Some<object>(_faulty));
@@ -49,6 +50,8 @@ namespace Monads.Tests
             Option<object> noneO = Option<object>.None();
             Option<object> noneC = new None<object>();
             IsFalse(noneO.HasValue); IsFalse(noneC.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneC.Value);
         }
 
         [TestMethod]
@@ -88,12 +91,20 @@ namespace Monads.Tests
         [TestMethod]
         public void EqualsTest()
         {
-            Option<object> someO = Option<object>.Some(_fine);
-            Option<object> someC = new Some<object>(_fine);
-            IsTrue(someO.Equals((object)someC)); IsTrue(someC.Equals((object)someO));
-            IsTrue(someO.Equals(someC)); IsTrue(someC.Equals(someO));
-            IsFalse(someO != someC); IsFalse(someC != someO);
-
+            // Reference equality
+            object obj = new();
+            Option<object> objO = Option<object>.Some(obj);
+            Option<object> objC = new Some<object>(obj);
+            IsTrue(objO.Equals((object)objC)); IsTrue(objC.Equals((object)objO));
+            IsTrue(objO.Equals(objC)); IsTrue(objC.Equals(objO));
+            IsFalse(objO != objC); IsFalse(objC != objO);
+            // Value equality
+            Option<object> strO = Option<object>.Some(_fine);
+            Option<object> strC = new Some<object>(_testString);
+            IsTrue(strO.Equals((object)strC)); IsTrue(strC.Equals((object)strO));
+            IsTrue(strO.Equals(strC)); IsTrue(strC.Equals(strO));
+            IsFalse(strO != strC); IsFalse(strC != strO);
+            // None equality
             Option<object> noneO = Option<object>.None();
             Option<object> noneC = new None<object>();
             IsTrue(noneO.Equals((object)noneC)); IsTrue(noneC.Equals((object)noneO));
