@@ -77,7 +77,21 @@ namespace Monads.Tests
         [TestMethod]
         public void InspectTest()
         {
-            //throw new NotImplementedException();
+            bool? outsideVar = null;
+            void ResetVar() => outsideVar = null;
+            void Some(object _) => outsideVar = true;
+            void None() => outsideVar = false;
+
+            Option<string> some = Option<string>.Some((string)_fine);
+            some.Inspect(Some, None);
+            IsTrue(outsideVar);
+            ResetVar();
+
+            Option<object> none = Option<object>.None();
+            none.Inspect(Some, None);
+            IsFalse(outsideVar);
+            ResetVar();
+        }
 
         [TestMethod]
         public void CastTest()
