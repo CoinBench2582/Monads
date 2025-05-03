@@ -78,6 +78,17 @@ namespace Monads.Tests
         public void InspectTest()
         {
             //throw new NotImplementedException();
+
+        [TestMethod]
+        public void CastTest()
+        {
+            Option<object> some = _fine;
+            IsTrue(some.HasValue);
+            _ = some.Value;
+
+            Option<object> none = _faulty;
+            IsFalse(none.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => none.Value);
         }
 
         [TestMethod]

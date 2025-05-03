@@ -91,6 +91,16 @@
         /// </returns>
         public T ValueOrDefault(T orElse) => _value ?? orElse;
         
+        /// <summary>
+        /// Creates a new <see cref="Option{T}"/> object, wrapping the provided <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value">the value to wrap</param>
+        /// <returns>
+        /// An <see cref="Option{T}.Some(T)"/> if the <paramref name="value"/> is not <see langword="null"/>.
+        /// Otherwise a <see cref="Option{T}.None"/>.
+        /// </returns>
+        public static implicit operator Option<T>(T? value) => new(value);
+        
         /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
         public bool Equals(Option<T>? other)
             => other is not null && this.GetHashCode() == other.GetHashCode();
