@@ -108,7 +108,32 @@ namespace Monads.Tests
         [TestMethod]
         public void MapTest()
         {
-            //throw new NotImplementedException();
+            const string doesnt = "doesn\'t exist";
+            const string exists = _testString + " exists";
+
+            Option<string> some = (string)_fine;
+            int len = some.Map(
+                s => s.Length,
+                () => 0
+            );
+            AreEqual(_testString.Length, len);
+            string mod = some.Map(
+                s => $"{s} exists",
+                () => doesnt
+            );
+            AreEqual(exists, mod);
+
+            Option<string> none = (string?)null;
+            len = none.Map(
+                s => s.Length,
+                () => 0
+            );
+            AreEqual(0, len);
+            mod = none.Map(
+                s => $"{s} exists",
+                () => doesnt
+            );
+            AreEqual(doesnt, mod);
         }
 
         [TestMethod]
