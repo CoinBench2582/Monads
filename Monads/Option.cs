@@ -34,6 +34,7 @@
         /// Creates an <see cref="Option{T}"/> that contains a value of type <typeparamref name="T"/>
         /// </summary>
         /// <param name="value">value to store</param>
+        /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
@@ -136,6 +137,7 @@
     /// </summary>
     /// <typeparam name="T">the desired underlying type</typeparam>
     /// <param name="value">value to store</param>
+    /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
     public class Some<T>(T value)
         : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
         where T : class;
