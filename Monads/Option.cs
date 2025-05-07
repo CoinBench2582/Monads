@@ -90,7 +90,7 @@
         /// Otherwise, <paramref name="orElse"/> is returned.
         /// </returns>
         public T ValueOrDefault(T orElse) => _value ?? orElse;
-        
+
         /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
         public bool Equals(Option<T>? other)
             => other is not null && this.GetHashCode() == other.GetHashCode();
