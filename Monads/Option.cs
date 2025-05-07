@@ -75,7 +75,7 @@
         /// <param name="some">operation to perform if the value exists</param>
         /// <param name="none">operation to perform if there is no value</param>
         /// <returns>
-        /// If there is a value, it is sent to <paramref name="some"/> and its result is returned.
+        /// If there is a value, it is passed to <paramref name="some"/> and its result is returned.
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
         public R Map<R>(Func<T, R> some, Func<R> none)
