@@ -34,14 +34,15 @@
         /// Creates an <see cref="Option{T}"/> that contains a value of type <typeparamref name="T"/>
         /// </summary>
         /// <param name="value">value to store</param>
+        /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
-        public static Option<T> Some(T value) => new(value);
+        public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
         /// <summary>
         /// Creates an <see cref="Option{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
-        public static Option<T> None() => new(null);
+        public static Option<T> None() => new();
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -91,6 +92,16 @@
         /// </returns>
         public T ValueOrDefault(T orElse) => _value ?? orElse;
 
+        /// <summary>
+        /// Creates a new <see cref="Option{T}"/> object, wrapping the provided <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value">the value to wrap</param>
+        /// <returns>
+        /// An <see cref="Option{T}.Some(T)"/> if the <paramref name="value"/> is not <see langword="null"/>.
+        /// Otherwise a <see cref="Option{T}.None"/>.
+        /// </returns>
+        public static implicit operator Option<T>(T? value) => new(value);
+
         /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
         public bool Equals(Option<T>? other)
             => other is not null && this.GetHashCode() == other.GetHashCode();
@@ -118,7 +129,7 @@
         public override bool Equals(object? obj) => Equals(obj as Option<T>);
         internal const string _none = "None";
         /// <inheritdoc cref="object.ToString"/>
-        public override string ToString() => $"{_value?.ToString() ?? _none}";
+        public override string ToString() => _value?.ToString() ?? _none;
     }
 
     /// <summary>
@@ -126,10 +137,13 @@
     /// </summary>
     /// <typeparam name="T">the desired underlying type</typeparam>
     /// <param name="value">value to store</param>
-    public class Some<T>(T value) : Option<T>(value) where T : class;
+    /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
+    public class Some<T>(T value)
+        : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
+        where T : class;
 
     /// <summary>
-    /// A shorthnd to create an <see cref="Option{T}.None"/>
+    /// A shorthand to create an <see cref="Option{T}.None"/>
     /// </summary>
     /// <typeparam name="T">the type of the value that is missing</typeparam>
     public class None<T>() : Option<T>() where T : class;
