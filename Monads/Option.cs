@@ -41,7 +41,7 @@
 #pragma warning disable CA2208 // Vytvářejte správně instanci výjimek argumentů
         static IOption<T> IOption<T>.Some(T value)
         {
-            _ = value ?? throw new ArgumentNullException(nameof(value), $"{nameof(value)} is null." );
+            _ = value ?? throw new ArgumentNullException(nameof(value));
             Type typeV = value.GetType();
             if (!typeV.IsClass && !typeV.IsInterface)
                 throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
@@ -78,13 +78,14 @@
 
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
-            Type typeT = typeof(T);
-            if (!typeT.IsClass && !typeT.IsInterface)
-                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
+            //Type typeT = typeof(T);
+            //if (!typeT.IsClass && !typeT.IsInterface)
+            //    throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
             Type typeR = typeof(R);
             if (!typeR.IsClass && !typeR.IsInterface)
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
-            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!;
+            //System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!;
+            System.Reflection.MethodInfo violation = this.GetType().GetMethod(nameof(Bind))!;
             return (IOption<R>)violation.Invoke(this, [func])!;
         }
 #pragma warning restore CA2208 // Vytvářejte správně instanci výjimek argumentů
