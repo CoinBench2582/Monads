@@ -1,6 +1,4 @@
-﻿using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
-
-namespace Monads.Tests
+﻿namespace Monads.Tests
 {
     [TestClass]
     public class OptionTests

@@ -1,4 +1,3 @@
-using static Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 #pragma warning disable IDE0039 // Použít lokální funkci
 
 namespace Monads.Tests
