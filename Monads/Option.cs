@@ -5,7 +5,7 @@
     /// </summary>
     /// <remarks>Also provides simple shorthands for ways of manipulating with them.</remarks>
     /// <typeparam name="T">the underlying value</typeparam>
-    public class Option<T> : IEquatable<Option<T>>
+    public class Option<T> : IEquatable<Option<T>>, IOption<T>
         where T : class
     {
         protected T? _value;
@@ -38,11 +38,31 @@
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
+#pragma warning disable CA2208 // Vytvářejte správně instanci výjimek argumentů
+        static IOption<T> IOption<T>.Some(T value)
+        {
+            _ = value ?? throw new ArgumentNullException(nameof(value), $"{nameof(value)} is null." );
+            Type typeV = value.GetType();
+            if (!typeV.IsClass && !typeV.IsInterface)
+                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
+            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!;
+            return (IOption<T>)violation.Invoke(null, [value])!;
+        }
+
         /// <summary>
         /// Creates an <see cref="Option{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
         public static Option<T> None() => new();
+
+        static IOption<T> IOption<T>.None()
+        {
+            Type typeT = typeof(T);
+            if (!typeT.IsClass && !typeT.IsInterface)
+                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
+            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!;
+            return (IOption<T>)violation.Invoke(null, null)!;
+        }
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -55,6 +75,19 @@
         /// </returns>
         public Option<R> Bind<R>(Func<T, R> func) where R : class
             => HasValue ? new(func(_value)) : new();
+
+        IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
+        {
+            Type typeT = typeof(T);
+            if (!typeT.IsClass && !typeT.IsInterface)
+                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
+            Type typeR = typeof(R);
+            if (!typeR.IsClass && !typeR.IsInterface)
+                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
+            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!;
+            return (IOption<R>)violation.Invoke(this, [func])!;
+        }
+#pragma warning restore CA2208 // Vytvářejte správně instanci výjimek argumentů
 
         /// <summary>
         /// Performs one of the actions,
