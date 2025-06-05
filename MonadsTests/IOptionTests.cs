@@ -66,6 +66,7 @@ public partial class IOptionTests
 
         Some<Option<string>, string>();
         None<Option<string>, string>();
+        Fail<Option<string>, string>();
 
         static void Some<O, T>() where O : IOption<T>
         {
@@ -86,6 +87,17 @@ public partial class IOptionTests
             IsFalse(noneLast.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+        }
+
+        // Zatím by nemělo fachat.
+        // Po implementaci ValueOption by mělo fungovat, takže přepsat na checkování, že funguje.
+        static void Fail<O, R>() where O : IOption<string>
+        {
+            IOption<string> some = O.Some((string)_fine);
+            IOption<string> none = O.None();
+            IOption<int> @out;
+            _ = ThrowsException<TypeArgumentException>(() => @out = some.Bind(s => s.Length));
+            _ = ThrowsException<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
         }
     }
 }

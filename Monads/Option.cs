@@ -43,8 +43,6 @@
         {
             _ = value ?? throw new ArgumentNullException(nameof(value));
             Type typeV = value.GetType();
-            if (!typeV.IsClass && !typeV.IsInterface)
-                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
             System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!;
             return (IOption<T>)violation.Invoke(null, [value])!;
         }
@@ -58,8 +56,6 @@
         static IOption<T> IOption<T>.None()
         {
             Type typeT = typeof(T);
-            if (!typeT.IsClass && !typeT.IsInterface)
-                throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
             System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!;
             return (IOption<T>)violation.Invoke(null, null)!;
         }
@@ -78,15 +74,14 @@
 
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
-            //Type typeT = typeof(T);
-            //if (!typeT.IsClass && !typeT.IsInterface)
-            //    throw new TypeArgumentException($"{nameof(T)} is not compliant with the generic type constraints.", nameof(T));
             Type typeR = typeof(R);
+            // Check won't throw once ValueOption is implemented - will determine between used Type for @base instead.
             if (!typeR.IsClass && !typeR.IsInterface)
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
-            //System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!.MakeGenericMethod(typeR)!;
-            System.Reflection.MethodInfo violation = this.GetType().GetMethod(nameof(Bind))!.MakeGenericMethod(typeR)!;
-            return (IOption<R>)violation.Invoke(this, [func])!;
+            Type @base = typeof(Option<>).MakeGenericType(typeR);
+            return (IOption<R>)(this.HasValue
+                ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this.Value)])!
+                : @base.GetMethod(nameof(None))!.Invoke(null, null)!);
         }
 #pragma warning restore CA2208 // Vytvářejte správně instanci výjimek argumentů
 
