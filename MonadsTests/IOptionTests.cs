@@ -1,0 +1,92 @@
+﻿#pragma warning disable CA1859 // Pokud je to možné, používejte konkrétní typy pro zvýšení výkonu.
+namespace Monads.Tests;
+
+[TestClass]
+public partial class IOptionTests
+{
+#pragma warning disable CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
+    // Set in Prepare
+    private static object _faulty;
+    private static object _fine;
+    private const string _testString = "Ahoj";
+    internal const string _none = "None";
+#pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
+
+    [ClassInitialize]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
+    public static void Prepare(TestContext context)
+    {
+        _fine = _testString;
+        _faulty = null!;
+        Console.WriteLine($"Started {nameof(IOptionTests)}");
+    }
+
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void Cleanup()
+    {
+        _fine = null!;
+        Console.WriteLine($"Ended {nameof(IOptionTests)}");
+    }
+
+    [TestMethod]
+    public void SomeTest()
+    {
+        Do<Option<object>, object>();
+
+        static void Do<O, T>() where O : IOption<T>
+        {
+            IOption<T> someO = O.Some((T)_fine);
+            IsTrue(someO.HasValue);
+            _ = someO.Value;
+            _ = ThrowsException<ArgumentNullException>(() => O.Some((T?)_faulty!));
+        }
+    }
+
+    [TestMethod]
+    public void NoneTest()
+    {
+        Do<Option<object>, object>();
+
+        static void Do<O, T>() where O : IOption<T>
+        {
+            IOption<T> noneO = O.None();
+            IsFalse(noneO.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
+        }
+    }
+
+    [TestMethod]
+    public void BindTest()
+    {
+        const string first = " světe";
+        const string bang = "!";
+        const string mid = _testString + first;
+        const string end = mid + bang;
+        static string ToStr<T>(T val) => val?.ToString()! ?? string.Empty;
+
+        Some<Option<string>, string>();
+        None<Option<string>, string>();
+
+        static void Some<O, T>() where O : IOption<T>
+        {
+            IOption<string> someInit = O.Some((T)_fine).Bind(ToStr);
+            IOption<string> someNext = someInit.Bind(s => string.Concat(s, first));
+            IOption<string> someLast = someNext.Bind(s => string.Concat(s, bang));
+            IsTrue(someNext.HasValue && someLast.HasValue);
+            AreEqual(mid, someNext.Value);
+            AreEqual(end, someLast.Value);
+        }
+
+        static void None<O, T>() where O : IOption<T>
+        {
+            IOption<string> noneInit = O.None().Bind(ToStr);
+            IOption<string> noneNext = noneInit.Bind(s => string.Concat(s, first));
+            IOption<string> noneLast = noneNext.Bind(s => string.Concat(s, bang));
+            IsFalse(noneNext.HasValue);
+            IsFalse(noneLast.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
+            _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+        }
+    }
+}
+#pragma warning restore CA1859 // Pokud je to možné, používejte konkrétní typy pro zvýšení výkonu.

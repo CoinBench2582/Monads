@@ -84,8 +84,8 @@
             Type typeR = typeof(R);
             if (!typeR.IsClass && !typeR.IsInterface)
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
-            //System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!;
-            System.Reflection.MethodInfo violation = this.GetType().GetMethod(nameof(Bind))!;
+            //System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeT).GetMethod(nameof(Bind))!.MakeGenericMethod(typeR)!;
+            System.Reflection.MethodInfo violation = this.GetType().GetMethod(nameof(Bind))!.MakeGenericMethod(typeR)!;
             return (IOption<R>)violation.Invoke(this, [func])!;
         }
 #pragma warning restore CA2208 // Vytvářejte správně instanci výjimek argumentů
