@@ -32,7 +32,7 @@ public partial class IOptionTests
     {
         Do<Option<object>, object>();
 
-        static void Do<O, T>() where O : IOption<T>
+        static void Do<O, T>() where O : IOption<T> where T : notnull
         {
             IOption<T> someO = O.Some((T)_fine);
             IsTrue(someO.HasValue);
@@ -46,7 +46,7 @@ public partial class IOptionTests
     {
         Do<Option<object>, object>();
 
-        static void Do<O, T>() where O : IOption<T>
+        static void Do<O, T>() where O : IOption<T> where T : notnull
         {
             IOption<T> noneO = O.None();
             IsFalse(noneO.HasValue);
@@ -67,7 +67,7 @@ public partial class IOptionTests
         None<Option<string>, string>();
         Fail<Option<string>>();
 
-        static void Some<O, T>() where O : IOption<T>
+        static void Some<O, T>() where O : IOption<T> where T : notnull
         {
             IOption<string> someInit = O.Some((T)_fine).Bind(ToStr);
             IOption<string> someNext = someInit.Bind(s => string.Concat(s, first));
@@ -77,7 +77,7 @@ public partial class IOptionTests
             AreEqual(end, someLast.Value);
         }
 
-        static void None<O, T>() where O : IOption<T>
+        static void None<O, T>() where O : IOption<T> where T : notnull
         {
             IOption<string> noneInit = O.None().Bind(ToStr);
             IOption<string> noneNext = noneInit.Bind(s => string.Concat(s, first));

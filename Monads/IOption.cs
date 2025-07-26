@@ -6,6 +6,7 @@ namespace Monads
     /// </summary>
     /// <typeparam name="T">Type of the underlying value</typeparam>
     public interface IOption<T>
+        where T : notnull
     {
         /// <summary>
         /// Returns the underlying value
@@ -44,10 +45,10 @@ namespace Monads
         /// If there was an underlying value, returns an <see cref="IOption{R}.Some(R)"/>.
         /// If there was no value, returns an <see cref="IOption{R}.None"/>.
         /// </returns>
-        IOption<R> Bind<R>(Func<T, R> func);
+        IOption<R> Bind<R>(Func<T, R> func) where R : notnull;
         /// <summary>
         /// Performs one of the actions,
-        /// depending on if there exists an underlying value or not.
+        /// depending on whether there exists an underlying value or not.
         /// </summary>
         /// <param name="some">action to perform if a value exists</param>
         /// <param name="none">action to perform if there is no value</param>
