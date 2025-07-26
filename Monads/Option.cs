@@ -39,12 +39,10 @@
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
         static IOption<T> IOption<T>.Some(T value)
-        {
-            _ = value ?? throw new ArgumentNullException(nameof(value));
-            //Type typeV = value.GetType();
-            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!;
-            return (IOption<T>)violation.Invoke(null, [value])!;
-        }
+            => (IOption<T>)
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!
+                .Invoke(null, [value 
+                    ?? throw new ArgumentNullException(nameof(value))])!;
 
         /// <summary>
         /// Creates an <see cref="Option{T}"/> with no underlying value
@@ -53,11 +51,9 @@
         public static Option<T> None() => new();
 
         static IOption<T> IOption<T>.None()
-        {
-            //Type typeT = typeof(T);
-            System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!;
-            return (IOption<T>)violation.Invoke(null, null)!;
-        }
+            => (IOption<T>)
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!
+                .Invoke(null, null)!;
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -75,8 +71,8 @@
         {
             Type typeR = typeof(R);
             // Check won't throw once ValueOption is implemented - will determine between used Type for @base instead.
-            if (!typeR.IsClass && !typeR.IsInterface)
-                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
+            if (!(typeR.IsClass || typeR.IsInterface))
+                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));            
             Type @base = typeof(Option<>).MakeGenericType(typeR);
             return (IOption<R>)(this.HasValue
                 ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this.Value)])!
