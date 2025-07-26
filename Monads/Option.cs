@@ -5,7 +5,7 @@
     /// </summary>
     /// <remarks>Also provides simple shorthands for ways of manipulating with them.</remarks>
     /// <typeparam name="T">the underlying value</typeparam>
-    public class Option<T> : IEquatable<Option<T>>, IOption<T>
+    public class Option<T> : IOption<T>
         where T : class
     {
         protected readonly T? _value;
@@ -129,31 +129,33 @@
         /// </returns>
         public static implicit operator Option<T>(T? value) => new(value);
 
-        /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
-        public bool Equals(Option<T>? other)
-            => other is not null && this.GetHashCode() == other.GetHashCode();
+#pragma warning disable S3875 // "operator==" should not be overloaded on reference types // used for referencing internal values
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s are equal
+        /// Indicates whether the <see cref="Option{T}"/>s reference the same values
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if their underlying values are equal or are both <see langword="null"/>.
+        /// <see langword="true"/> if they both reference the same values or are <see cref="Option{T}.None"/>.
         /// <see langword="false"/> otherwise.
         /// </returns>
         public static bool operator ==(Option<T>? self, Option<T>? other)
-            => self is null ? other is null : self.Equals(other);
+            => self is null ? other is null : other is not null && self._value == other._value;
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s are not equal
+        /// Indicates whether the <see cref="Option{T}"/>s reference different values
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if their underlying values are not equal or only one is <see langword="null"/>.
+        /// <see langword="true"/> if they reference different value or one is <see cref="Option{T}.None"/>.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public static bool operator !=(Option<T>? self, Option<T>? other) => !(self == other);
+        public static bool operator !=(Option<T>? self, Option<T>? other)
+            => self is null ? other is not null : other is null || self._value != other._value;
+#pragma warning restore S3875 // "operator==" should not be overloaded on reference types
 
+        /// <inheritdoc cref="object.Equals(object?)"/>
+        public override bool Equals(object? obj)
+            => obj is Option<T> other
+                && (this._value is null ? other._value is null : this._value.Equals(other._value));
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
-        /// <inheritdoc cref="object.Equals(object?)"/>
-        public override bool Equals(object? obj) => Equals(obj as Option<T>);
         internal const string _none = "None";
         /// <inheritdoc cref="object.ToString"/>
         public override string ToString() => _value?.ToString() ?? _none;
