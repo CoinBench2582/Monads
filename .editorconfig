@@ -2,3 +2,6 @@
 
 # IDE0130: Namespace neodpovídá struktuře složek.
 #dotnet_diagnostic.IDE0130.severity = information
+
+# S125: Sections of code should not be commented out
+dotnet_diagnostic.S125.severity = suggestion

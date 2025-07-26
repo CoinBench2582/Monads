@@ -8,7 +8,7 @@
     public class Option<T> : IEquatable<Option<T>>, IOption<T>
         where T : class
     {
-        protected T? _value;
+        protected readonly T? _value;
 
         /// <summary>
         /// Returns the underlying value
@@ -38,11 +38,10 @@
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
-#pragma warning disable CA2208 // Vytvářejte správně instanci výjimek argumentů
         static IOption<T> IOption<T>.Some(T value)
         {
             _ = value ?? throw new ArgumentNullException(nameof(value));
-            Type typeV = value.GetType();
+            //Type typeV = value.GetType();
             System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!;
             return (IOption<T>)violation.Invoke(null, [value])!;
         }
@@ -55,7 +54,7 @@
 
         static IOption<T> IOption<T>.None()
         {
-            Type typeT = typeof(T);
+            //Type typeT = typeof(T);
             System.Reflection.MethodInfo violation = typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!;
             return (IOption<T>)violation.Invoke(null, null)!;
         }
@@ -83,7 +82,6 @@
                 ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this.Value)])!
                 : @base.GetMethod(nameof(None))!.Invoke(null, null)!);
         }
-#pragma warning restore CA2208 // Vytvářejte správně instanci výjimek argumentů
 
         /// <summary>
         /// Performs one of the actions,

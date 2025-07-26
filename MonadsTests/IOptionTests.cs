@@ -1,5 +1,4 @@
-﻿#pragma warning disable CA1859 // Pokud je to možné, používejte konkrétní typy pro zvýšení výkonu.
-namespace Monads.Tests;
+﻿namespace Monads.Tests;
 
 [TestClass]
 public partial class IOptionTests
@@ -66,7 +65,7 @@ public partial class IOptionTests
 
         Some<Option<string>, string>();
         None<Option<string>, string>();
-        Fail<Option<string>, string>();
+        Fail<Option<string>>();
 
         static void Some<O, T>() where O : IOption<T>
         {
@@ -91,7 +90,7 @@ public partial class IOptionTests
 
         // Zatím by nemělo fachat.
         // Po implementaci ValueOption by mělo fungovat, takže přepsat na checkování, že funguje.
-        static void Fail<O, R>() where O : IOption<string>
+        static void Fail<O>() where O : IOption<string>
         {
             IOption<string> some = O.Some((string)_fine);
             IOption<string> none = O.None();
@@ -101,4 +100,3 @@ public partial class IOptionTests
         }
     }
 }
-#pragma warning restore CA1859 // Pokud je to možné, používejte konkrétní typy pro zvýšení výkonu.
