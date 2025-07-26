@@ -7,11 +7,10 @@
         // Set in Prepare
         private static object _faulty;
         private static object _fine;
+        private static object _nulling;
+        private static object _empty;
         private const string _testString = "Ahoj";
-        internal const string _none = "None";
 #pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
-
-        // public TestContext TestContext { get; set; }
 
         [ClassInitialize]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
@@ -19,6 +18,8 @@
         {
             _fine = _testString;
             _faulty = null!;
+            _nulling = new NullingClass();
+            _empty = new EmptyClass();
             Console.WriteLine($"Started {nameof(OptionTests)}");
         }
 
@@ -26,6 +27,8 @@
         public static void Cleanup()
         {
             _fine = null!;
+            _nulling = null!;
+            _empty = null!;
             Console.WriteLine($"Ended {nameof(OptionTests)}");
         }
 
@@ -181,7 +184,22 @@
             AreEqual(_fine.ToString(), some.ToString());
 
             Option<object> none = Option<object>.None();
-            AreEqual(_none, none.ToString());
+            AreEqual(null, none.ToString());
+
+            Option<object> nulling = Option<object>.Some(_nulling);
+            AreEqual(null, nulling.ToString());
+
+            Option<object> empty = Option<object>.Some(_empty);
+            AreEqual(_empty.ToString(), empty.ToString());
         }
     }
+
+    file sealed class NullingClass
+    {
+        public sealed override string? ToString() => null;
+    }
+
+#pragma warning disable S2094 // Classes should not be empty
+    file sealed class EmptyClass;
+#pragma warning restore S2094 // Classes should not be empty
 }

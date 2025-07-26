@@ -152,9 +152,8 @@
                 && (this._value is null ? other._value is null : this._value.Equals(other._value));
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
-        internal const string _none = "None";
         /// <inheritdoc cref="object.ToString"/>
-        public override string ToString() => _value?.ToString() ?? _none;
+        public override string? ToString() => _value?.ToString();
     }
 
     /// <summary>

@@ -8,7 +8,6 @@ public partial class IOptionTests
     private static object _faulty;
     private static object _fine;
     private const string _testString = "Ahoj";
-    internal const string _none = "None";
 #pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
 
     [ClassInitialize]
