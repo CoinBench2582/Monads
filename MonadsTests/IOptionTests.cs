@@ -98,4 +98,66 @@ public partial class IOptionTests
             _ = ThrowsException<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
         }
     }
+
+    [TestMethod]
+    public void InspectTest()
+    {
+        Do<Option<string>, string>();
+
+        static void Do<O, T>() where O : IOption<T> where T : notnull
+        {
+            bool good = false;
+            IOption<T> some = O.Some((T)_fine);
+            some.Inspect(
+                t => good = true,
+           () => Fail("Invoked none where some")
+            );
+            IsTrue(good);
+
+            good = false;
+            IOption<T> none = O.None();
+            none.Inspect(
+                _ => Fail("Invoked some where none"),
+                () => good = true
+            );
+            IsTrue(good);
+        }
+    }
+
+    [TestMethod]
+    public void MapTest()
+    {
+        Do<Option<string>, string>();
+
+        static void Do<O, T>() where O : IOption<T> where T : notnull
+        {
+            bool good;
+            IOption<T> some = O.Some((T)_fine);
+            good = some.Map(_ => true, () => false);
+            IsTrue(good);
+
+            IOption<T> none = O.None();
+            good = none.Map(_ => false, () => true);
+            IsTrue(good);
+        }
+    }
+
+    [TestMethod]
+    public void ValueDefaultTest()
+    {
+        Do<Option<string>>();
+
+        static void Do<O>() where O : IOption<string>
+        {
+            const string orElse = "else";
+
+            IOption<string> some = O.Some((string)_fine);
+            string result = some.ValueOrDefault(orElse);
+            AreEqual(_testString, result);
+
+            IOption<string> none = O.None();
+            result = none.ValueOrDefault(orElse);
+            AreEqual(orElse, result);
+        }
+    }
 }
