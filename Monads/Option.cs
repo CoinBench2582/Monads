@@ -41,7 +41,7 @@
         static IOption<T> IOption<T>.Some(T value)
             => (IOption<T>)
                 typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!
-                .Invoke(null, [value 
+                .Invoke(null, [value
                     ?? throw new ArgumentNullException(nameof(value))])!;
 
         /// <summary>
@@ -72,7 +72,7 @@
             Type typeR = typeof(R);
             // Check won't throw once ValueOption is implemented - will determine between used Type for @base instead.
             if (!(typeR.IsClass || typeR.IsInterface))
-                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));            
+                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
             Type @base = typeof(Option<>).MakeGenericType(typeR);
             return (IOption<R>)(this.HasValue
                 ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this.Value)])!
@@ -125,6 +125,16 @@
         /// </returns>
         public static implicit operator Option<T>(T? value) => new(value);
 
+        /// <summary>
+        /// Returns the underlying wrapped value of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="value">The instance to convert.</param>
+        /// <returns>
+        /// If the instance has an underlying value, it is returned;
+        /// otherwise, <see langword="null"/> is returned.
+        /// </returns>
+        public static implicit operator T?(Option<T> value) => value._value;
+
 #pragma warning disable S3875 // "operator==" should not be overloaded on reference types // used for referencing internal values
         /// <summary>
         /// Indicates whether the <see cref="Option{T}"/>s reference the same values
@@ -135,6 +145,7 @@
         /// </returns>
         public static bool operator ==(Option<T>? self, Option<T>? other)
             => self is null ? other is null : other is not null && self._value == other._value;
+
         /// <summary>
         /// Indicates whether the <see cref="Option{T}"/>s reference different values
         /// </summary>
@@ -150,8 +161,10 @@
         public override bool Equals(object? obj)
             => obj is Option<T> other
                 && (this._value is null ? other._value is null : this._value.Equals(other._value));
+
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
+
         /// <inheritdoc cref="object.ToString"/>
         public override string? ToString() => _value?.ToString();
     }
@@ -162,7 +175,7 @@
     /// <typeparam name="T">the desired underlying type</typeparam>
     /// <param name="value">value to store</param>
     /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
-    public class Some<T>(T value)
+    public sealed class Some<T>(T value)
         : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
         where T : class;
 
@@ -170,5 +183,5 @@
     /// A shorthand to create an <see cref="Option{T}.None"/>
     /// </summary>
     /// <typeparam name="T">the type of the value that is missing</typeparam>
-    public class None<T>() : Option<T>() where T : class;
+    public sealed class None<T>() : Option<T>() where T : class;
 }

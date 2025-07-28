@@ -97,13 +97,21 @@
         [TestMethod]
         public void CastTest()
         {
-            Option<object> some = _fine;
+            Option<string> some = (string)_fine;
             IsTrue(some.HasValue);
             _ = some.Value;
+            string? fine = some;
+            IsTrue(fine is not null);
+            AreEqual(_fine, fine);
+            AreEqual(_testString, fine);
 
-            Option<object> none = _faulty;
+            Option<string> none = (string?)_faulty!;
             IsFalse(none.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => none.Value);
+            string? bad = none;
+            IsTrue(bad is null);
+            AreEqual(_faulty, bad);
+            AreEqual(null, bad);
         }
 
         [TestMethod]
