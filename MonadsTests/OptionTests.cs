@@ -1,4 +1,6 @@
-﻿namespace Monads.Tests
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Monads.Tests
 {
     [TestClass]
     public class OptionTests
@@ -76,13 +78,13 @@
         }
 
         [TestMethod]
-        public void InspectTest()
+        public void InspectDualTest()
         {
             bool? outsideVar = null;
             void ResetVar() => outsideVar = null;
             void Some(object _) => outsideVar = true;
             void None() => outsideVar = false;
-
+                        
             Option<string> some = Option<string>.Some((string)_fine);
             some.Inspect(Some, None);
             IsTrue(outsideVar);
@@ -95,13 +97,49 @@
         }
 
         [TestMethod]
+        public void InspectSomeTest()
+        {
+            bool? outsideVar = null;
+            void ResetVar() => outsideVar = null;
+            void Some(object _) => outsideVar = true;
+
+            Option<string> some = Option<string>.Some((string)_fine);
+            some.Inspect(Some);
+            IsTrue(outsideVar);
+            ResetVar();
+
+            Option<object> none = Option<object>.None();
+            none.Inspect(Some);
+            IsNull(outsideVar);
+            ResetVar();
+        }
+
+        [TestMethod]
+        public void InspectNoneTest()
+        {
+            bool? outsideVar = null;
+            void ResetVar() => outsideVar = null;
+            void None() => outsideVar = false;
+
+            Option<string> some = Option<string>.Some((string)_fine);
+            some.Inspect(None);
+            IsNull(outsideVar);
+            ResetVar();
+
+            Option<object> none = Option<object>.None();
+            none.Inspect(None);
+            IsFalse(outsideVar);
+            ResetVar();
+        }
+
+        [TestMethod]
         public void CastTest()
         {
             Option<string> some = (string)_fine;
             IsTrue(some.HasValue);
             _ = some.Value;
             string? fine = some;
-            IsTrue(fine is not null);
+            IsNotNull(fine);
             AreEqual(_fine, fine);
             AreEqual(_testString, fine);
 
@@ -109,7 +147,7 @@
             IsFalse(none.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => none.Value);
             string? bad = none;
-            IsTrue(bad is null);
+            IsNull(bad);
             AreEqual(_faulty, bad);
             AreEqual(null, bad);
         }

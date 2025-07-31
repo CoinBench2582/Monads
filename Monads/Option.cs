@@ -65,7 +65,7 @@
         /// If there was no value, returns an <see cref="Option{R}.None"/>.
         /// </returns>
         public Option<R> Bind<R>(Func<T, R> func) where R : class
-            => HasValue ? new(func(_value)) : new();
+            => this.HasValue ? new(func(_value)) : new();
 
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
@@ -75,7 +75,7 @@
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
             Type @base = typeof(Option<>).MakeGenericType(typeR);
             return (IOption<R>)(this.HasValue
-                ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this.Value)])!
+                ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this._value)])!
                 : @base.GetMethod(nameof(None))!.Invoke(null, null)!);
         }
 
@@ -87,9 +87,25 @@
         /// <param name="none">action to perform if there is no value</param>
         public void Inspect(Action<T> some, Action none)
         {
-            if (HasValue)
+            if (this.HasValue)
                 some(_value);
             else none();
+        }
+        /// <summary>
+        /// Performs the action <paramref name="some"/> only if there exists an underlying value.
+        /// </summary>
+        /// <param name="some">the action to perform if a value exists</param>
+        public void Inspect(Action<T> some)
+        {
+            if (this.HasValue) some(_value);
+        }
+        /// <summary>
+        /// Performs the action <paramref name="none"/> only if there doesn't exist any value.
+        /// </summary>
+        /// <param name="none">the action to perform if there is no value</param>
+        public void Inspect(Action none)
+        {
+            if (!this.HasValue) none();
         }
 
         /// <summary>
@@ -103,7 +119,7 @@
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
         public R Map<R>(Func<T, R> some, Func<R> none)
-            => HasValue ? some(_value) : none();
+            => this.HasValue ? some(_value) : none();
 
         /// <summary>
         /// Tries to return the underlying value.
