@@ -208,19 +208,19 @@ namespace Monads.Tests
             Option<object> objC = new Some<object>(obj);
             IsTrue(objO.Equals((object)objC)); IsTrue(objC.Equals((object)objO));
             IsTrue(objO.Equals(objC)); IsTrue(objC.Equals(objO));
-            IsFalse(objO != objC); IsFalse(objC != objO);
+            IsTrue(objO == objC); IsFalse(objC != objO);
             // Value equality
             Option<object> strO = Option<object>.Some(_fine);
             Option<object> strC = new Some<object>(_testString);
             IsTrue(strO.Equals((object)strC)); IsTrue(strC.Equals((object)strO));
             IsTrue(strO.Equals(strC)); IsTrue(strC.Equals(strO));
-            IsFalse(strO != strC); IsFalse(strC != strO);
+            IsTrue(strO == strC); IsFalse(strC != strO);
             // None equality
             Option<object> noneO = Option<object>.None();
             Option<object> noneC = new None<object>();
             IsTrue(noneO.Equals((object)noneC)); IsTrue(noneC.Equals((object)noneO));
             IsTrue(noneO.Equals(noneC)); IsTrue(noneC.Equals(noneO));
-            IsFalse(noneO != noneC); IsFalse(noneC != noneO);
+            IsTrue(noneO == noneC); IsFalse(noneC != noneO);
         }
 
         [TestMethod]

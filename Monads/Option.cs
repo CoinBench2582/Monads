@@ -151,22 +151,23 @@
         /// </returns>
         public static implicit operator T?(Option<T> value) => value._value;
 
-#pragma warning disable S3875 // "operator==" should not be overloaded on reference types // used for referencing internal values
+#pragma warning disable S3875 // "operator==" should not be overloaded on reference types
+        // used for correctly comparing internal values
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s reference the same values
+        /// Indicates whether the <see cref="Option{T}"/>s' values are <c>==</c> equal
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if they both reference the same values or are <see cref="Option{T}.None"/>.
+        /// <see langword="true"/> if their values are <c>==</c> equal or both are <see cref="Option{T}.None"/>;
         /// <see langword="false"/> otherwise.
         /// </returns>
         public static bool operator ==(Option<T>? self, Option<T>? other)
             => self is null ? other is null : other is not null && self._value == other._value;
 
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s reference different values
+        /// Indicates whether the <see cref="Option{T}"/>s' values are <c>!=</c> not equal
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if they reference different value or one is <see cref="Option{T}.None"/>.
+        /// <see langword="true"/> if their values are <c>!=</c> not equal or only one is <see cref="Option{T}.None"/>;
         /// <see langword="false"/> otherwise.
         /// </returns>
         public static bool operator !=(Option<T>? self, Option<T>? other)
