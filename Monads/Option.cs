@@ -5,7 +5,7 @@
     /// </summary>
     /// <remarks>Also provides simple shorthands for ways of manipulating with them.</remarks>
     /// <typeparam name="T">the underlying value</typeparam>
-    public class Option<T> : IOption<T>
+    public class Option<T> : IOption<T>, IOptionFactory<T>
         where T : class
     {
         protected readonly T? _value;
@@ -38,7 +38,7 @@
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
-        static IOption<T> IOption<T>.Some(T value)
+        static IOption<T> IOptionFactory<T>.Some(T value)
             => (IOption<T>)
                 typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!
                 .Invoke(null, [value
@@ -50,7 +50,7 @@
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
         public static Option<T> None() => new();
 
-        static IOption<T> IOption<T>.None()
+        static IOption<T> IOptionFactory<T>.None()
             => (IOption<T>)
                 typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!
                 .Invoke(null, null)!;

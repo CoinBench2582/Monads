@@ -1,5 +1,4 @@
-﻿
-namespace Monads
+﻿namespace Monads
 {
     /// <summary>
     /// An interface used to unite monad types that may or may not contain a value of the specified type.
@@ -24,19 +23,6 @@ namespace Monads
         /// </returns>
         [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(Value))]
         bool HasValue { get; }
-
-        /// <summary>
-        /// Creates an <see cref="IOption{T}"/> that contains a value of type <typeparamref name="T"/>
-        /// </summary>
-        /// <param name="value">value to store</param>
-        /// <returns>An <see cref="IOption{T}"/> with some value of type <typeparamref name="T"/></returns>
-        static abstract IOption<T> Some(T value);
-
-        /// <summary>
-        /// Creates an <see cref="IOption{T}"/> with no underlying value
-        /// </summary>
-        /// <returns>An <see cref="IOption{T}"/> containing nothing</returns>
-        static abstract IOption<T> None();
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -88,5 +74,32 @@ namespace Monads
         /// Otherwise, <paramref name="orElse"/> is returned.
         /// </returns>
         T ValueOrDefault(T orElse);
+    }
+
+    /// <summary>
+    /// Defines a contract for creating instances of an <see cref="IOption{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// This interface provides static methods for creating <see cref="IOption{T}"/> instances,
+    /// either with a value (using <see cref="Some(T)"/>)
+    /// or without a value (using <see cref="None()"/>).
+    /// </remarks>
+    /// <typeparam name="T">The type of the value that the <see cref="IOption{T}"/> can contain.</typeparam>
+    public interface IOptionFactory<T>
+        where T : notnull
+    {
+
+        /// <summary>
+        /// Creates an <see cref="IOption{T}"/> that contains a value of type <typeparamref name="T"/>
+        /// </summary>
+        /// <param name="value">value to store</param>
+        /// <returns>An <see cref="IOption{T}"/> with some value of type <typeparamref name="T"/></returns>
+        static abstract IOption<T> Some(T value);
+
+        /// <summary>
+        /// Creates an <see cref="IOption{T}"/> with no underlying value
+        /// </summary>
+        /// <returns>An <see cref="IOption{T}"/> containing nothing</returns>
+        static abstract IOption<T> None();
     }
 }
