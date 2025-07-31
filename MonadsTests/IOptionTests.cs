@@ -102,24 +102,52 @@ public partial class IOptionTests
     [TestMethod]
     public void InspectTest()
     {
-        Do<Option<string>, string>();
+        Dual<Option<string>, string>();
+        Some<Option<string>, string>();
+        None<Option<string>, string>();
 
-        static void Do<O, T>() where O : IOption<T> where T : notnull
+        static void Dual<O, T>() where O : IOption<T> where T : notnull
         {
-            bool good = false;
+            bool? good = null;
             IOption<T> some = O.Some((T)_fine);
             some.Inspect(
-                t => good = true,
+                _ => good = true,
            () => Fail("Invoked none where some")
             );
             IsTrue(good);
 
-            good = false;
+            good = null;
             IOption<T> none = O.None();
             none.Inspect(
                 _ => Fail("Invoked some where none"),
                 () => good = true
             );
+            IsTrue(good);
+        }
+
+        static void Some<O, T>() where O : IOption<T> where T : notnull
+        {
+            bool? good = null;
+            IOption<T> some = O.Some((T)_fine);
+            some.Inspect(_ => good = true);
+            IsTrue(good);
+
+            good = null;
+            IOption<T> none = O.None();
+            none.Inspect(_ => Fail("Invoked some where none"));
+            IsNull(good);
+        }
+
+        static void None<O, T>() where O : IOption<T> where T : notnull
+        {
+            bool? good = null;
+            IOption<T> some = O.Some((T)_fine);
+            some.Inspect(() => Fail("Invoked none where some"));
+            IsNull(good);
+
+            good = null;
+            IOption<T> none = O.None();
+            none.Inspect(() => good = true);
             IsTrue(good);
         }
     }
@@ -143,7 +171,7 @@ public partial class IOptionTests
     }
 
     [TestMethod]
-    public void ValueDefaultTest()
+    public void ValueOrDefaultTest()
     {
         Do<Option<string>>();
 
