@@ -33,6 +33,9 @@
         /// If there was an underlying value, returns an <see cref="IOption{R}.Some(R)"/>.
         /// If there was no value, returns an <see cref="IOption{R}.None"/>.
         /// </returns>
+        /// <exception cref="TypeArgumentException">
+        /// might throw an <see cref="TypeArgumentException"/> when an inappropriate result type <typeparamref name="R"/> is handed
+        /// </exception>
         IOption<R> Bind<R>(Func<T, R> func) where R : notnull;
 
         /// <summary>
@@ -88,7 +91,6 @@
     public interface IOptionFactory<T>
         where T : notnull
     {
-
         /// <summary>
         /// Creates an <see cref="IOption{T}"/> that contains a value of type <typeparamref name="T"/>
         /// </summary>

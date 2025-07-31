@@ -5,3 +5,7 @@
 
 # S125: Sections of code should not be commented out
 dotnet_diagnostic.S125.severity = suggestion
+
+# S3925: "ISerializable" should be implemented correctly
+# ISerializable is obsolete, so no warning ever.
+dotnet_diagnostic.S3925.severity = none

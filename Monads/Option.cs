@@ -67,6 +67,8 @@
         public Option<R> Bind<R>(Func<T, R> func) where R : class
             => this.HasValue ? new(func(_value)) : new();
 
+        /// <inheritdoc cref="IOption{T}.Bind{R}(Func{T, R})"/>
+        /// <exception cref="TypeArgumentException"></exception>
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
             Type typeR = typeof(R);
@@ -75,8 +77,8 @@
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
             Type @base = typeof(Option<>).MakeGenericType(typeR);
             return (IOption<R>)(this.HasValue
-                ? @base.GetMethod(nameof(Some))!.Invoke(null, [func(this._value)])!
-                : @base.GetMethod(nameof(None))!.Invoke(null, null)!);
+                ? @base.GetMethod(nameof(IOptionFactory<R>.Some))!.Invoke(null, [func(this._value)])!
+                : @base.GetMethod(nameof(IOptionFactory<R>.None))!.Invoke(null, null)!);
         }
 
         /// <summary>

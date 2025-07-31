@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Monads
+﻿namespace Monads
 {
+    /// <summary>
+    /// An exception that is thrown when one of the type arguments provided is not valid in that context.
+    /// </summary>
+    /// <remarks>Inherited from <see cref="ArgumentException"/> with no extended behaviour</remarks>
     [Serializable]
-    /// <inheritdoc cref="ArgumentException"/>
     public sealed class TypeArgumentException : ArgumentException
     {
         /// <inheritdoc cref="ArgumentException()"/>
