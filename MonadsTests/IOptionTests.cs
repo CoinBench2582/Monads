@@ -1,191 +1,192 @@
-﻿namespace Monads.Tests;
-
-[TestClass]
-public partial class IOptionTests
+﻿namespace Monads.Tests
 {
+    [TestClass]
+    public partial class IOptionTests
+    {
 #pragma warning disable CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
-    // Set in Prepare
-    private static object _faulty;
-    private static object _fine;
-    private const string _testString = "Ahoj";
+        // Set in Prepare
+        private static object _faulty;
+        private static object _fine;
+        private const string _testString = "Ahoj";
 #pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
 
-    [ClassInitialize]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
-    public static void Prepare(TestContext context)
-    {
-        _fine = _testString;
-        _faulty = null!;
-        Console.WriteLine($"Started {nameof(IOptionTests)}");
-    }
-
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-    public static void Cleanup()
-    {
-        _fine = null!;
-        Console.WriteLine($"Ended {nameof(IOptionTests)}");
-    }
-
-    [TestMethod]
-    public void SomeTest()
-    {
-        Do<Option<object>, object>();
-
-        static void Do<O, T>() where O : IOptionFactory<T> where T : notnull
+        [ClassInitialize]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
+        public static void Prepare(TestContext context)
         {
-            IOption<T> someO = O.Some((T)_fine);
-            IsTrue(someO.HasValue);
-            _ = someO.Value;
-            _ = ThrowsException<ArgumentNullException>(() => O.Some((T?)_faulty!));
-        }
-    }
-
-    [TestMethod]
-    public void NoneTest()
-    {
-        Do<Option<object>, object>();
-
-        static void Do<O, T>() where O : IOptionFactory<T> where T : notnull
-        {
-            IOption<T> noneO = O.None();
-            IsFalse(noneO.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
-        }
-    }
-
-    [TestMethod]
-    public void BindTest()
-    {
-        const string first = " světe";
-        const string bang = "!";
-        const string mid = _testString + first;
-        const string end = mid + bang;
-        static string ToStr<T>(T val) => val?.ToString()! ?? string.Empty;
-
-        Some<Option<string>, string>();
-        None<Option<string>, string>();
-        Fail<Option<string>>();
-
-        static void Some<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
-        {
-            IOption<string> someInit = O.Some((T)_fine).Bind(ToStr);
-            IOption<string> someNext = someInit.Bind(s => string.Concat(s, first));
-            IOption<string> someLast = someNext.Bind(s => string.Concat(s, bang));
-            IsTrue(someNext.HasValue && someLast.HasValue);
-            AreEqual(mid, someNext.Value);
-            AreEqual(end, someLast.Value);
+            _fine = _testString;
+            _faulty = null!;
+            Console.WriteLine($"Started {nameof(IOptionTests)}");
         }
 
-        static void None<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        public static void Cleanup()
         {
-            IOption<string> noneInit = O.None().Bind(ToStr);
-            IOption<string> noneNext = noneInit.Bind(s => string.Concat(s, first));
-            IOption<string> noneLast = noneNext.Bind(s => string.Concat(s, bang));
-            IsFalse(noneNext.HasValue);
-            IsFalse(noneLast.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+            _fine = null!;
+            Console.WriteLine($"Ended {nameof(IOptionTests)}");
         }
 
-        // Zatím by nemělo fachat.
-        // Po implementaci ValueOption by mělo fungovat, takže přepsat na checkování, že funguje.
-        static void Fail<O>() where O : IOption<string>, IOptionFactory<string>
+        [TestMethod]
+        public void SomeTest()
         {
-            IOption<string> some = O.Some((string)_fine);
-            IOption<string> none = O.None();
-            IOption<int> @out;
-            _ = ThrowsException<TypeArgumentException>(() => @out = some.Bind(s => s.Length));
-            _ = ThrowsException<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
-        }
-    }
+            Do<Option<object>, object>();
 
-    [TestMethod]
-    public void InspectTest()
-    {
-        Dual<Option<string>, string>();
-        Some<Option<string>, string>();
-        None<Option<string>, string>();
-
-        static void Dual<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
-        {
-            bool? good = null;
-            IOption<T> some = O.Some((T)_fine);
-            some.Inspect(
-                _ => good = true,
-           () => Fail("Invoked none where some")
-            );
-            IsTrue(good);
-
-            good = null;
-            IOption<T> none = O.None();
-            none.Inspect(
-                _ => Fail("Invoked some where none"),
-                () => good = true
-            );
-            IsTrue(good);
+            static void Do<O, T>() where O : IOptionFactory<T> where T : notnull
+            {
+                IOption<T> someO = O.Some((T)_fine);
+                IsTrue(someO.HasValue);
+                _ = someO.Value;
+                _ = ThrowsException<ArgumentNullException>(() => O.Some((T?)_faulty!));
+            }
         }
 
-        static void Some<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+        [TestMethod]
+        public void NoneTest()
         {
-            bool? good = null;
-            IOption<T> some = O.Some((T)_fine);
-            some.Inspect(_ => good = true);
-            IsTrue(good);
+            Do<Option<object>, object>();
 
-            good = null;
-            IOption<T> none = O.None();
-            none.Inspect(_ => Fail("Invoked some where none"));
-            IsNull(good);
+            static void Do<O, T>() where O : IOptionFactory<T> where T : notnull
+            {
+                IOption<T> noneO = O.None();
+                IsFalse(noneO.HasValue);
+                _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
+            }
         }
 
-        static void None<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+        [TestMethod]
+        public void BindTest()
         {
-            bool? good = null;
-            IOption<T> some = O.Some((T)_fine);
-            some.Inspect(() => Fail("Invoked none where some"));
-            IsNull(good);
+            const string first = " světe";
+            const string bang = "!";
+            const string mid = _testString + first;
+            const string end = mid + bang;
+            static string ToStr<T>(T val) => val?.ToString()! ?? string.Empty;
 
-            good = null;
-            IOption<T> none = O.None();
-            none.Inspect(() => good = true);
-            IsTrue(good);
+            Some<Option<string>, string>();
+            None<Option<string>, string>();
+            Fail<Option<string>>();
+
+            static void Some<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                IOption<string> someInit = O.Some((T)_fine).Bind(ToStr);
+                IOption<string> someNext = someInit.Bind(s => string.Concat(s, first));
+                IOption<string> someLast = someNext.Bind(s => string.Concat(s, bang));
+                IsTrue(someNext.HasValue && someLast.HasValue);
+                AreEqual(mid, someNext.Value);
+                AreEqual(end, someLast.Value);
+            }
+
+            static void None<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                IOption<string> noneInit = O.None().Bind(ToStr);
+                IOption<string> noneNext = noneInit.Bind(s => string.Concat(s, first));
+                IOption<string> noneLast = noneNext.Bind(s => string.Concat(s, bang));
+                IsFalse(noneNext.HasValue);
+                IsFalse(noneLast.HasValue);
+                _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
+                _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+            }
+
+            // Zatím by nemělo fachat.
+            // Po implementaci ValueOption by mělo fungovat, takže přepsat na checkování, že funguje.
+            static void Fail<O>() where O : IOption<string>, IOptionFactory<string>
+            {
+                IOption<string> some = O.Some((string)_fine);
+                IOption<string> none = O.None();
+                IOption<int> @out;
+                _ = ThrowsException<TypeArgumentException>(() => @out = some.Bind(s => s.Length));
+                _ = ThrowsException<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
+            }
         }
-    }
 
-    [TestMethod]
-    public void MapTest()
-    {
-        Do<Option<string>, string>();
-
-        static void Do<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+        [TestMethod]
+        public void InspectTest()
         {
-            bool good;
-            IOption<T> some = O.Some((T)_fine);
-            good = some.Map(_ => true, () => false);
-            IsTrue(good);
+            Dual<Option<string>, string>();
+            Some<Option<string>, string>();
+            None<Option<string>, string>();
 
-            IOption<T> none = O.None();
-            good = none.Map(_ => false, () => true);
-            IsTrue(good);
+            static void Dual<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                bool? good = null;
+                IOption<T> some = O.Some((T)_fine);
+                some.Inspect(
+                    _ => good = true,
+               () => Fail("Invoked none where some")
+                );
+                IsTrue(good);
+
+                good = null;
+                IOption<T> none = O.None();
+                none.Inspect(
+                    _ => Fail("Invoked some where none"),
+                    () => good = true
+                );
+                IsTrue(good);
+            }
+
+            static void Some<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                bool? good = null;
+                IOption<T> some = O.Some((T)_fine);
+                some.Inspect(_ => good = true);
+                IsTrue(good);
+
+                good = null;
+                IOption<T> none = O.None();
+                none.Inspect(_ => Fail("Invoked some where none"));
+                IsNull(good);
+            }
+
+            static void None<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                bool? good = null;
+                IOption<T> some = O.Some((T)_fine);
+                some.Inspect(() => Fail("Invoked none where some"));
+                IsNull(good);
+
+                good = null;
+                IOption<T> none = O.None();
+                none.Inspect(() => good = true);
+                IsTrue(good);
+            }
         }
-    }
 
-    [TestMethod]
-    public void ValueOrDefaultTest()
-    {
-        Do<Option<string>>();
-
-        static void Do<O>() where O : IOption<string>, IOptionFactory<string>
+        [TestMethod]
+        public void MapTest()
         {
-            const string orElse = "else";
+            Do<Option<string>, string>();
 
-            IOption<string> some = O.Some((string)_fine);
-            string result = some.ValueOrDefault(orElse);
-            AreEqual(_testString, result);
+            static void Do<O, T>() where O : IOption<T>, IOptionFactory<T> where T : notnull
+            {
+                bool good;
+                IOption<T> some = O.Some((T)_fine);
+                good = some.Map(_ => true, () => false);
+                IsTrue(good);
 
-            IOption<string> none = O.None();
-            result = none.ValueOrDefault(orElse);
-            AreEqual(orElse, result);
+                IOption<T> none = O.None();
+                good = none.Map(_ => false, () => true);
+                IsTrue(good);
+            }
+        }
+
+        [TestMethod]
+        public void ValueOrDefaultTest()
+        {
+            Do<Option<string>>();
+
+            static void Do<O>() where O : IOption<string>, IOptionFactory<string>
+            {
+                const string orElse = "else";
+
+                IOption<string> some = O.Some((string)_fine);
+                string result = some.ValueOrDefault(orElse);
+                AreEqual(_testString, result);
+
+                IOption<string> none = O.None();
+                result = none.ValueOrDefault(orElse);
+                AreEqual(orElse, result);
+            }
         }
     }
 }

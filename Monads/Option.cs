@@ -4,10 +4,13 @@
     /// The monad type used to represent that there might be a value, but doesn't have to be as well.
     /// </summary>
     /// <remarks>Also provides simple shorthands for ways of manipulating with them.</remarks>
-    /// <typeparam name="T">the underlying value</typeparam>
+    /// <typeparam name="T">the underlying type</typeparam>
     public class Option<T> : IOption<T>, IOptionFactory<T>
         where T : class
     {
+        /// <summary>
+        /// the underlying value
+        /// </summary>
         protected readonly T? _value;
 
         /// <summary>
@@ -28,6 +31,13 @@
         [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(_value))]
         public bool HasValue => _value is not null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Option{T}"/> class with an optional value.
+        /// </summary>
+        /// <param name="value">
+        /// The initial value of the option.
+        /// Can be <see langword="null"/> to represent no value.
+        /// </param>
         protected Option(T? value = null) => _value = value;
 
         /// <summary>
@@ -67,8 +77,6 @@
         public Option<R> Bind<R>(Func<T, R> func) where R : class
             => this.HasValue ? new(func(_value)) : new();
 
-        /// <inheritdoc cref="IOption{T}.Bind{R}(Func{T, R})"/>
-        /// <exception cref="TypeArgumentException"></exception>
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
             Type typeR = typeof(R);
@@ -184,19 +192,33 @@
             => obj is Option<T> other
                 && (this._value is null ? other._value is null : this._value.Equals(other._value));
 
+        /// <returns>
+        /// A hash code for the current underlying value,
+        /// or <c>0</c> if the value is <see langword="null"/>.
+        /// </returns>
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
 
-        /// <inheritdoc cref="object.ToString"/>
+        /// <summary>
+        /// Returns a string representation of the underlying value.
+        /// </summary>
+        /// <returns>
+        /// The string representation of the underlying value,
+        /// or <see langword="null"/> if the value is <see langword="null"/>.
+        /// </returns>
         public override string? ToString() => _value?.ToString();
     }
 
     /// <summary>
     /// A shorthand to create an <see cref="Option{T}.Some(T)"/>
     /// </summary>
-    /// <typeparam name="T">the desired underlying type</typeparam>
+    /// <remarks>
+    /// This class carries no additional behaviour.
+    /// It cannot be inherited.
+    /// </remarks>
+    /// <typeparam name="T">the underlying type</typeparam>
     /// <param name="value">value to store</param>
-    /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
     public sealed class Some<T>(T value)
         : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
         where T : class;
@@ -204,6 +226,10 @@
     /// <summary>
     /// A shorthand to create an <see cref="Option{T}.None"/>
     /// </summary>
+    /// <remarks>
+    /// This class carries no additional behaviour.
+    /// It cannot be inherited.
+    /// </remarks>
     /// <typeparam name="T">the type of the value that is missing</typeparam>
     public sealed class None<T>() : Option<T>() where T : class;
 }
