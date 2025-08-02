@@ -190,7 +190,9 @@
         /// <inheritdoc cref="object.Equals(object?)"/>
         public override bool Equals(object? obj)
             => obj is Option<T> other
-                && (this._value is null ? other._value is null : this._value.Equals(other._value));
+                && (this._value is null
+                    ? other._value is null || other._value.Equals(this._value)
+                    : this._value.Equals(other._value));
 
         /// <returns>
         /// A hash code for the current underlying value,
