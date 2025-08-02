@@ -136,7 +136,7 @@
             Option<string> some = (string)_fine;
             IsTrue(some.HasValue);
             _ = some.Value;
-            string? fine = some;
+            string? fine = (string?)some;
             IsNotNull(fine);
             AreEqual(_fine, fine);
             AreEqual(_testString, fine);
@@ -144,10 +144,39 @@
             Option<string> none = (string?)_faulty!;
             IsFalse(none.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => none.Value);
-            string? bad = none;
+            string? bad = (string?)none;
             IsNull(bad);
             AreEqual(_faulty, bad);
             AreEqual(null, bad);
+        }
+
+        /// <summary>
+        /// Tests dark magic and interactions with <see langword="null"/>.
+        /// Used to test interaction with nullable <see cref="Option{T}"/> and its cast operators.
+        /// </summary>
+        [TestMethod]
+        public void NullResilienceTest()
+        {
+#pragma warning disable CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
+#pragma warning disable CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
+            Option<string> @null = null;
+            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            string? @out;
+            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+#pragma warning restore CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
+
+            Option<string>? maybe = null;
+            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            @out = null;
+            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+
+            Option<Option<string>> possible = @null;
+            IsFalse(possible.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => possible.Value);
+            Option<string>? unwrap = (Option<string>?)possible;
+            AreEqual(maybe, unwrap);
+            AreEqual(null, unwrap);
+#pragma warning restore CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
         }
 
         [TestMethod]

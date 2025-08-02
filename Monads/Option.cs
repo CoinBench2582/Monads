@@ -151,7 +151,10 @@
         /// If the instance has an underlying value, it is returned;
         /// otherwise, <see langword="null"/> is returned.
         /// </returns>
-        public static implicit operator T?(Option<T> value) => value._value;
+        /// <exception cref="InvalidCastException">the supplied <paramref name="value"/> was <see langword="null"/></exception>
+        public static explicit operator T?(Option<T> value)
+            => value is not null ? value._value
+                : throw new InvalidCastException($"The converted {nameof(value)} was null.", new NullReferenceException());
 
 #pragma warning disable S3875 // "operator==" should not be overloaded on reference types
         // used for correctly comparing internal values
