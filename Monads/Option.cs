@@ -11,6 +11,7 @@
         /// <summary>
         /// the underlying value
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Nedeklarujte viditelná pole instance.", Justification = "Protected field is not externally visible.")]
         protected readonly T? _value;
 
         /// <summary>
@@ -41,16 +42,22 @@
         protected Option(T? value = null) => _value = value;
 
         /// <summary>
+        /// Shorthand for <see cref="System.Reflection.BindingFlags"/> to make reflection more performant.
+        /// </summary>
+        private protected const System.Reflection.BindingFlags _hereFlags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly;
+
+        /// <summary>
         /// Creates an <see cref="Option{T}"/> that contains a value of type <typeparamref name="T"/>
         /// </summary>
         /// <param name="value">value to store</param>
         /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Nedeklarujte statické členy u obecných typů.", Justification = "Fulfilling IOptionFactory<T> interface.")]
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
-
+        
         static IOption<T> IOptionFactory<T>.Some(T value)
             => (IOption<T>)
-                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some), _hereFlags)!
                 .Invoke(null, [value
                     ?? throw new ArgumentNullException(nameof(value))])!;
 
@@ -58,24 +65,27 @@
         /// Creates an <see cref="Option{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1000:Nedeklarujte statické členy u obecných typů.", Justification = "Plnění rozhraní IOptionFactory<T>")]
         public static Option<T> None() => new();
 
         static IOption<T> IOptionFactory<T>.None()
             => (IOption<T>)
-                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None), _hereFlags)!
                 .Invoke(null, null)!;
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
         /// </summary>
-        /// <typeparam name="R">Type of the result of the operation</typeparam>
+        /// <typeparam name="TResult">Type of the result of the operation</typeparam>
         /// <param name="func">operation to perform</param>
         /// <returns>
         /// If there was an underlying value, returns an <see cref="Option{R}.Some(R)"/>.
         /// If there was no value, returns an <see cref="Option{R}.None"/>.
         /// </returns>
-        public Option<R> Bind<R>(Func<T, R> func) where R : class
-            => this.HasValue ? new(func(_value)) : new();
+        public Option<TResult> Bind<TResult>(Func<T, TResult> func) where TResult : class
+            => this.HasValue
+                ? new((func ?? throw new ArgumentNullException(nameof(func))).Invoke(_value))
+                : new();
 
         IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
         {
@@ -85,8 +95,9 @@
                 throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
             Type @base = typeof(Option<>).MakeGenericType(typeR);
             return (IOption<R>)(this.HasValue
-                ? @base.GetMethod(nameof(IOptionFactory<R>.Some))!.Invoke(null, [func(this._value)])!
-                : @base.GetMethod(nameof(IOptionFactory<R>.None))!.Invoke(null, null)!);
+                ? @base.GetMethod(nameof(IOptionFactory<R>.Some), _hereFlags)!
+                    .Invoke(null, [(func ?? throw new ArgumentNullException(nameof(func))).Invoke(this._value)])!
+                : @base.GetMethod(nameof(IOptionFactory<R>.None), _hereFlags)!.Invoke(null, null)!);
         }
 
         /// <summary>
@@ -98,9 +109,9 @@
         public void Inspect(Action<T> some, Action none)
         {
             if (this.HasValue)
-                some(_value);
+                (some ?? throw new ArgumentNullException(nameof(some))).Invoke(_value);
             else
-                none();
+                (none ?? throw new ArgumentNullException(nameof(none))).Invoke();
         }
         /// <summary>
         /// Performs the action <paramref name="some"/> only if there exists an underlying value.
@@ -109,7 +120,7 @@
         public void Inspect(Action<T> some)
         {
             if (this.HasValue)
-                some(_value);
+                (some ?? throw new ArgumentNullException(nameof(some))).Invoke(_value);
         }
         /// <summary>
         /// Performs the action <paramref name="none"/> only if there doesn't exist any value.
@@ -118,7 +129,7 @@
         public void Inspect(Action none)
         {
             if (!this.HasValue)
-                none();
+                (none ?? throw new ArgumentNullException(nameof(none))).Invoke();
         }
 
         /// <summary>
@@ -131,8 +142,10 @@
         /// If there is a value, it is passed to <paramref name="some"/> and its result is returned.
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
-        public R Map<R>(Func<T, R> some, Func<R> none)
-            => this.HasValue ? some(_value) : none();
+        public TResult Map<TResult>(Func<T, TResult> some, Func<TResult> none)
+            => this.HasValue
+                ? (some ?? throw new ArgumentNullException(nameof(some))).Invoke(_value)
+                : (none ?? throw new ArgumentNullException(nameof(none))).Invoke();
 
         /// <summary>
         /// Tries to return the underlying value.
@@ -152,6 +165,7 @@
         /// An <see cref="Option{T}.Some(T)"/> if the <paramref name="value"/> is not <see langword="null"/>.
         /// Otherwise a <see cref="Option{T}.None"/>.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Přetížení operátorů mají pojmenované alternativy.", Justification = "Would result in an invalid public method.")]
         public static implicit operator Option<T>(T? value) => new(value);
 
         /// <summary>
@@ -163,9 +177,10 @@
         /// otherwise, <see langword="null"/> is returned.
         /// </returns>
         /// <exception cref="InvalidCastException">the supplied <paramref name="value"/> was <see langword="null"/></exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Přetížení operátorů mají pojmenované alternativy.", Justification = "Would result in an invalid public method.")]
         public static explicit operator T?(Option<T> value)
             => value is not null ? value._value
-                : throw new InvalidCastException($"The converted {nameof(value)} was null.", new NullReferenceException());
+                : throw new InvalidCastException($"The converted {nameof(value)} was null.");
 
 #pragma warning disable S3875 // "operator==" should not be overloaded on reference types
         // used for correctly comparing internal values
@@ -193,9 +208,7 @@
         /// <inheritdoc cref="object.Equals(object?)"/>
         public override bool Equals(object? obj)
             => obj is Option<T> other
-                && (this._value is null
-                    ? other._value is null || other._value.Equals(this._value)
-                    : this._value.Equals(other._value));
+                && (this._value is null ? other._value is null : this._value.Equals(other._value));
 
         /// <returns>
         /// A hash code for the current underlying value,

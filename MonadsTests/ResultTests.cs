@@ -72,7 +72,7 @@ namespace Monads.Tests
         public void IsOkAndTest()
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            Func<object, bool> predicate = static (object v) => v is not null;
+            Func<object, bool> predicate = static v => v is not null;
             IsTrue(result.IsOkAnd(predicate));
         }
 
@@ -80,7 +80,16 @@ namespace Monads.Tests
         public void IsOkAndFalseTest()
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            Func<object, bool> predicate = static (object v) => v is null;
+            object different = new();
+            Func<object, bool> predicate = v => v == different;
+            IsFalse(result.IsOkAnd(predicate));
+        }
+
+        [TestMethod]
+        public void IsOkAndNullTest()
+        {
+            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
+            Func<object, bool> predicate = static v => v is null;
             IsFalse(result.IsOkAnd(predicate));
         }
 
@@ -88,7 +97,7 @@ namespace Monads.Tests
         public void IsErrorAndTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            Func<Exception, bool> predicate = static (Exception e) => e.Message == _testError.Message;
+            Func<Exception, bool> predicate = static e => e.Message == _testError.Message;
             IsTrue(result.IsErrorAnd(predicate));
         }
 
@@ -96,7 +105,7 @@ namespace Monads.Tests
         public void IsErrorAndFalseTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            Func<Exception, bool> predicate = static (Exception e) => e.Message == "Different Error";
+            Func<Exception, bool> predicate = static e => e.Message == "Different Error";
             IsFalse(result.IsErrorAnd(predicate));
         }
 
@@ -104,31 +113,7 @@ namespace Monads.Tests
         public void IsErrorAndNullTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            Func<Exception, bool> predicate = static (Exception e) => e is null;
-            IsFalse(result.IsErrorAnd(predicate));
-        }
-
-        [TestMethod]
-        public void IsOkAndNullTest()
-        {
-            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            Func<object, bool> predicate = static (object v) => v is null;
-            IsFalse(result.IsOkAnd(predicate));
-        }
-
-        [TestMethod]
-        public void IsOkAndNullPredicateTest()
-        {
-            Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            Func<object, bool> predicate = static(object v) => v is null;
-            IsFalse(result.IsOkAnd(predicate));
-        }
-
-        [TestMethod]
-        public void IsErrorAndNullPredicateTest()
-        {
-            Result<object, Exception> result = new Error<object, Exception>(_testError);
-            Func<Exception, bool> predicate = static (Exception e) => e is null;
+            Func<Exception, bool> predicate = static e => e is null;
             IsFalse(result.IsErrorAnd(predicate));
         }
 
@@ -136,7 +121,7 @@ namespace Monads.Tests
         public void OkTest()
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            IsTrue(result.Ok.Value == _testValue);
+            AreEqual(_testValue, result.Ok.Value);
         }
 
         [TestMethod]
@@ -150,7 +135,7 @@ namespace Monads.Tests
         public void ErrorTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            IsTrue(result.Error.Value == _testError);
+            AreEqual(_testError, result.Error.Value);
         }
 
         [TestMethod]
@@ -265,7 +250,10 @@ namespace Monads.Tests
         [TestMethod]
         public void TryExecuteUnexpectedTest()
         {
+#pragma warning disable S3928 // Parameter names used into ArgumentException constructors should match an existing one
+            // Intentional
             ArgumentException exception = new();
+#pragma warning restore S3928 // Parameter names used into ArgumentException constructors should match an existing one 
             Func<string> testFunc = () => false ? string.Empty : throw exception;
             Result<string, InvalidOperationException>? result = default;
             try
