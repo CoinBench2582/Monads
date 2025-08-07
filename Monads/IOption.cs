@@ -27,16 +27,16 @@
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
         /// </summary>
-        /// <typeparam name="R">Type of the result of the operation</typeparam>
+        /// <typeparam name="TResult">Type of the result of the operation</typeparam>
         /// <param name="func">operation to perform</param>
         /// <returns>
         /// If there was an underlying value, returns an <see cref="IOption{R}.Some(R)"/>.
         /// If there was no value, returns an <see cref="IOption{R}.None"/>.
         /// </returns>
         /// <exception cref="TypeArgumentException">
-        /// might throw an <see cref="TypeArgumentException"/> when an inappropriate result type <typeparamref name="R"/> is handed
+        /// might throw an <see cref="TypeArgumentException"/> when an inappropriate result type <typeparamref name="TResult"/> is handed
         /// </exception>
-        IOption<R> Bind<R>(Func<T, R> func) where R : notnull;
+        IOption<TResult> Bind<TResult>(Func<T, TResult> func) where TResult : notnull;
 
         /// <summary>
         /// Performs one of the actions,
@@ -66,7 +66,7 @@
         /// If there is a value, it is passed to <paramref name="some"/> and its result is returned.
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
-        R Map<R>(Func<T, R> some, Func<R> none);
+        TResult Map<TResult>(Func<T, TResult> some, Func<TResult> none);
 
         /// <summary>
         /// Tries to return the underlying value.

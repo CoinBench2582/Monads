@@ -42,8 +42,8 @@
             _ = someO.Value;
             _ = someC.Value;
 
-            _ = ThrowsException<ArgumentNullException>(() => Option<object>.Some(_faulty));
-            _ = ThrowsException<ArgumentNullException>(() => _ = new Some<object>(_faulty));
+            _ = ThrowsExactly<ArgumentNullException>(static () => Option<object>.Some(_faulty));
+            _ = ThrowsExactly<ArgumentNullException>(static () => _ = new Some<object>(_faulty));
         }
 
         [TestMethod]
@@ -53,8 +53,8 @@
             Option<object> noneC = new None<object>();
             IsFalse(noneO.HasValue);
             IsFalse(noneC.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneC.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = noneO.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = noneC.Value);
         }
 
         [TestMethod]
@@ -74,8 +74,8 @@
             Option<string> noneLast = noneNext.Bind(s => string.Concat(s, "!"));
             IsFalse(noneNext.HasValue);
             IsFalse(noneLast.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
-            _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = noneNext.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = noneLast.Value);
         }
 
         [TestMethod]
@@ -146,11 +146,11 @@
 
             Option<string> none = (string?)_faulty!;
             IsFalse(none.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => none.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => none.Value);
             string? bad = (string?)none;
             IsNull(bad);
             AreEqual(_faulty, bad);
-            AreEqual(null, bad);
+            IsNull(bad);
         }
 
         /// <summary>
@@ -163,22 +163,22 @@
 #pragma warning disable CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
 #pragma warning disable CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
             Option<string> @null = null;
-            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            _ = ThrowsExactly<NullReferenceException>(() => @null.HasValue);
             string? @out;
-            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+            _ = ThrowsExactly<InvalidCastException>(() => @out = (string?)@null!);
 #pragma warning restore CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
 
             Option<string>? maybe = null;
-            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            _ = ThrowsExactly<NullReferenceException>(() => @null.HasValue);
             @out = null;
-            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+            _ = ThrowsExactly<InvalidCastException>(() => @out = (string?)@null!);
 
             Option<Option<string>> possible = @null;
             IsFalse(possible.HasValue);
-            _ = ThrowsException<InvalidOperationException>(() => possible.Value);
+            _ = ThrowsExactly<InvalidOperationException>(() => possible.Value);
             Option<string>? unwrap = (Option<string>?)possible;
             AreEqual(maybe, unwrap);
-            AreEqual(null, unwrap);
+            IsNull(unwrap);
 #pragma warning restore CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
         }
 
@@ -190,25 +190,25 @@
 
             Option<string> some = (string)_fine;
             int len = some.Map(
-                s => s.Length,
-                () => 0
+                static s => s.Length,
+                static () => 0
             );
             AreEqual(_testString.Length, len);
             string mod = some.Map(
-                s => $"{s} exists",
-                () => doesnt
+                static s => $"{s} exists",
+                static () => doesnt
             );
             AreEqual(exists, mod);
 
             Option<string> none = (string?)null;
             len = none.Map(
-                s => s.Length,
-                () => 0
+                static s => s.Length,
+                static () => 0
             );
             AreEqual(0, len);
             mod = none.Map(
-                s => $"{s} exists",
-                () => doesnt
+                static s => $"{s} exists",
+                static () => doesnt
             );
             AreEqual(doesnt, mod);
         }
@@ -269,10 +269,10 @@
             AreEqual(_fine.ToString(), some.ToString());
 
             Option<object> none = Option<object>.None();
-            AreEqual(null, none.ToString());
+            IsNull(none.ToString());
 
             Option<object> nulling = Option<object>.Some(_nulling);
-            AreEqual(null, nulling.ToString());
+            IsNull(nulling.ToString());
 
             Option<object> empty = Option<object>.Some(_empty);
             AreEqual(_empty.ToString(), empty.ToString());

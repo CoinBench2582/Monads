@@ -36,7 +36,7 @@
                 IOption<T> someO = O.Some((T)_fine);
                 IsTrue(someO.HasValue);
                 _ = someO.Value;
-                _ = ThrowsException<ArgumentNullException>(() => O.Some((T?)_faulty!));
+                _ = ThrowsExactly<ArgumentNullException>(static () => O.Some((T?)_faulty!));
             }
         }
 
@@ -49,7 +49,7 @@
             {
                 IOption<T> noneO = O.None();
                 IsFalse(noneO.HasValue);
-                _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
+                _ = ThrowsExactly<InvalidOperationException>(() => _ = noneO.Value);
             }
         }
 
@@ -83,8 +83,8 @@
                 IOption<string> noneLast = noneNext.Bind(s => string.Concat(s, bang));
                 IsFalse(noneNext.HasValue);
                 IsFalse(noneLast.HasValue);
-                _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
-                _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
+                _ = ThrowsExactly<InvalidOperationException>(() => _ = noneNext.Value);
+                _ = ThrowsExactly<InvalidOperationException>(() => _ = noneLast.Value);
             }
 
             // Zatím by nemělo fachat.
@@ -94,8 +94,8 @@
                 IOption<string> some = O.Some((string)_fine);
                 IOption<string> none = O.None();
                 IOption<int> @out;
-                _ = ThrowsException<TypeArgumentException>(() => @out = some.Bind(s => s.Length));
-                _ = ThrowsException<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
+                _ = ThrowsExactly<TypeArgumentException>(() => @out = some.Bind(s => s.Length));
+                _ = ThrowsExactly<TypeArgumentException>(() => @out = none.Bind(s => s.Length));
             }
         }
 
@@ -161,11 +161,11 @@
             {
                 bool good;
                 IOption<T> some = O.Some((T)_fine);
-                good = some.Map(_ => true, () => false);
+                good = some.Map(static _ => true, static () => false);
                 IsTrue(good);
 
                 IOption<T> none = O.None();
-                good = none.Map(_ => false, () => true);
+                good = none.Map(static _ => false, static () => true);
                 IsTrue(good);
             }
         }
