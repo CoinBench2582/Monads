@@ -4,11 +4,14 @@
     /// The monad type used to represent that there might be a value, but doesn't have to be as well.
     /// </summary>
     /// <remarks>Also provides simple shorthands for ways of manipulating with them.</remarks>
-    /// <typeparam name="T">the underlying value</typeparam>
-    public class Option<T> : IEquatable<Option<T>>
+    /// <typeparam name="T">the underlying type</typeparam>
+    public class Option<T> : IOption<T>, IOptionFactory<T>
         where T : class
     {
-        protected T? _value;
+        /// <summary>
+        /// the underlying value
+        /// </summary>
+        protected readonly T? _value;
 
         /// <summary>
         /// Returns the underlying value
@@ -28,6 +31,13 @@
         [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(_value))]
         public bool HasValue => _value is not null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Option{T}"/> class with an optional value.
+        /// </summary>
+        /// <param name="value">
+        /// The initial value of the option.
+        /// Can be <see langword="null"/> to represent no value.
+        /// </param>
         protected Option(T? value = null) => _value = value;
 
         /// <summary>
@@ -38,11 +48,22 @@
         /// <returns>An <see cref="Option{T}"/> with some value of type <typeparamref name="T"/></returns>
         public static Option<T> Some(T value) => new(value ?? throw new ArgumentNullException(nameof(value)));
 
+        static IOption<T> IOptionFactory<T>.Some(T value)
+            => (IOption<T>)
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(Some))!
+                .Invoke(null, [value
+                    ?? throw new ArgumentNullException(nameof(value))])!;
+
         /// <summary>
         /// Creates an <see cref="Option{T}"/> with no underlying value
         /// </summary>
         /// <returns>An <see cref="Option{T}"/> containing nothing</returns>
         public static Option<T> None() => new();
+
+        static IOption<T> IOptionFactory<T>.None()
+            => (IOption<T>)
+                typeof(Option<>).MakeGenericType(typeof(T)).GetMethod(nameof(None))!
+                .Invoke(null, null)!;
 
         /// <summary>
         /// Tries to commit an operation with the possible underlying value.
@@ -54,7 +75,19 @@
         /// If there was no value, returns an <see cref="Option{R}.None"/>.
         /// </returns>
         public Option<R> Bind<R>(Func<T, R> func) where R : class
-            => HasValue ? new(func(_value)) : new();
+            => this.HasValue ? new(func(_value)) : new();
+
+        IOption<R> IOption<T>.Bind<R>(Func<T, R> func)
+        {
+            Type typeR = typeof(R);
+            // Check won't throw once ValueOption is implemented - will determine between used Type for @base instead.
+            if (!(typeR.IsClass || typeR.IsInterface))
+                throw new TypeArgumentException($"{nameof(R)} is not compliant with the generic type constraints.", nameof(R));
+            Type @base = typeof(Option<>).MakeGenericType(typeR);
+            return (IOption<R>)(this.HasValue
+                ? @base.GetMethod(nameof(IOptionFactory<R>.Some))!.Invoke(null, [func(this._value)])!
+                : @base.GetMethod(nameof(IOptionFactory<R>.None))!.Invoke(null, null)!);
+        }
 
         /// <summary>
         /// Performs one of the actions,
@@ -64,9 +97,28 @@
         /// <param name="none">action to perform if there is no value</param>
         public void Inspect(Action<T> some, Action none)
         {
-            if (HasValue)
+            if (this.HasValue)
                 some(_value);
-            else none();
+            else
+                none();
+        }
+        /// <summary>
+        /// Performs the action <paramref name="some"/> only if there exists an underlying value.
+        /// </summary>
+        /// <param name="some">the action to perform if a value exists</param>
+        public void Inspect(Action<T> some)
+        {
+            if (this.HasValue)
+                some(_value);
+        }
+        /// <summary>
+        /// Performs the action <paramref name="none"/> only if there doesn't exist any value.
+        /// </summary>
+        /// <param name="none">the action to perform if there is no value</param>
+        public void Inspect(Action none)
+        {
+            if (!this.HasValue)
+                none();
         }
 
         /// <summary>
@@ -76,11 +128,11 @@
         /// <param name="some">operation to perform if the value exists</param>
         /// <param name="none">operation to perform if there is no value</param>
         /// <returns>
-        /// If there is a value, it is sent to <paramref name="some"/> and its result is returned.
+        /// If there is a value, it is passed to <paramref name="some"/> and its result is returned.
         /// If there is no value, the result of <paramref name="none"/> is returned.
         /// </returns>
         public R Map<R>(Func<T, R> some, Func<R> none)
-            => HasValue ? some(_value) : none();
+            => this.HasValue ? some(_value) : none();
 
         /// <summary>
         /// Tries to return the underlying value.
@@ -102,49 +154,87 @@
         /// </returns>
         public static implicit operator Option<T>(T? value) => new(value);
 
-        /// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
-        public bool Equals(Option<T>? other)
-            => other is not null && this.GetHashCode() == other.GetHashCode();
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s are equal
+        /// Returns the underlying wrapped value of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="value">The instance to convert.</param>
+        /// <returns>
+        /// If the instance has an underlying value, it is returned;
+        /// otherwise, <see langword="null"/> is returned.
+        /// </returns>
+        /// <exception cref="InvalidCastException">the supplied <paramref name="value"/> was <see langword="null"/></exception>
+        public static explicit operator T?(Option<T> value)
+            => value is not null ? value._value
+                : throw new InvalidCastException($"The converted {nameof(value)} was null.", new NullReferenceException());
+
+#pragma warning disable S3875 // "operator==" should not be overloaded on reference types
+        // used for correctly comparing internal values
+        /// <summary>
+        /// Indicates whether the <see cref="Option{T}"/>s' values are <c>==</c> equal
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if their underlying values are equal or are both <see langword="null"/>.
+        /// <see langword="true"/> if their values are <c>==</c> equal or both are <see cref="Option{T}.None"/>;
         /// <see langword="false"/> otherwise.
         /// </returns>
         public static bool operator ==(Option<T>? self, Option<T>? other)
-            => self is null ? other is null : self.Equals(other);
+            => self is null ? other is null : other is not null && self._value == other._value;
+
         /// <summary>
-        /// Indicates whether the <see cref="Option{T}"/>s are not equal
+        /// Indicates whether the <see cref="Option{T}"/>s' values are <c>!=</c> not equal
         /// </summary>
         /// <returns>
-        /// <see langword="true"/> if their underlying values are not equal or only one is <see langword="null"/>.
+        /// <see langword="true"/> if their values are <c>!=</c> not equal or only one is <see cref="Option{T}.None"/>;
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public static bool operator !=(Option<T>? self, Option<T>? other) => !(self == other);
+        public static bool operator !=(Option<T>? self, Option<T>? other)
+            => self is null ? other is not null : other is null || self._value != other._value;
+#pragma warning restore S3875 // "operator==" should not be overloaded on reference types
 
+        /// <inheritdoc cref="object.Equals(object?)"/>
+        public override bool Equals(object? obj)
+            => obj is Option<T> other
+                && (this._value is null
+                    ? other._value is null || other._value.Equals(this._value)
+                    : this._value.Equals(other._value));
+
+        /// <returns>
+        /// A hash code for the current underlying value,
+        /// or <c>0</c> if the value is <see langword="null"/>.
+        /// </returns>
         /// <inheritdoc cref="object.GetHashCode"/>
         public override int GetHashCode() => _value?.GetHashCode() ?? 0;
-        /// <inheritdoc cref="object.Equals(object?)"/>
-        public override bool Equals(object? obj) => Equals(obj as Option<T>);
-        internal const string _none = "None";
-        /// <inheritdoc cref="object.ToString"/>
-        public override string ToString() => _value?.ToString() ?? _none;
+
+        /// <summary>
+        /// Returns a string representation of the underlying value.
+        /// </summary>
+        /// <returns>
+        /// The string representation of the underlying value,
+        /// or <see langword="null"/> if the value is <see langword="null"/>.
+        /// </returns>
+        public override string? ToString() => _value?.ToString();
     }
 
     /// <summary>
     /// A shorthand to create an <see cref="Option{T}.Some(T)"/>
     /// </summary>
-    /// <typeparam name="T">the desired underlying type</typeparam>
+    /// <remarks>
+    /// This class carries no additional behaviour.
+    /// It cannot be inherited.
+    /// </remarks>
+    /// <typeparam name="T">the underlying type</typeparam>
     /// <param name="value">value to store</param>
     /// <exception cref="ArgumentNullException">The provided value was <see langword="null"/></exception>
-    public class Some<T>(T value)
+    public sealed class Some<T>(T value)
         : Option<T>(value ?? throw new ArgumentNullException(nameof(value)))
         where T : class;
 
     /// <summary>
     /// A shorthand to create an <see cref="Option{T}.None"/>
     /// </summary>
+    /// <remarks>
+    /// This class carries no additional behaviour.
+    /// It cannot be inherited.
+    /// </remarks>
     /// <typeparam name="T">the type of the value that is missing</typeparam>
-    public class None<T>() : Option<T>() where T : class;
+    public sealed class None<T>() : Option<T>() where T : class;
 }

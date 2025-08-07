@@ -7,11 +7,10 @@
         // Set in Prepare
         private static object _faulty;
         private static object _fine;
+        private static object _nulling;
+        private static object _empty;
         private const string _testString = "Ahoj";
-        internal const string _none = "None";
 #pragma warning restore CS8618 // Pole, které nemůže být null, musí při ukončování konstruktoru obsahovat hodnotu, která není null.
-
-        // public TestContext TestContext { get; set; }
 
         [ClassInitialize]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Odebrat nepoužívaný parametr", Justification = "Součástí API")]
@@ -19,6 +18,8 @@
         {
             _fine = _testString;
             _faulty = null!;
+            _nulling = new NullingClass();
+            _empty = new EmptyClass();
             Console.WriteLine($"Started {nameof(OptionTests)}");
         }
 
@@ -26,6 +27,8 @@
         public static void Cleanup()
         {
             _fine = null!;
+            _nulling = null!;
+            _empty = null!;
             Console.WriteLine($"Ended {nameof(OptionTests)}");
         }
 
@@ -34,7 +37,8 @@
         {
             Option<object> someO = Option<object>.Some(_fine);
             Option<object> someC = new Some<object>(_fine);
-            IsTrue(someO.HasValue); IsTrue(someC.HasValue);
+            IsTrue(someO.HasValue);
+            IsTrue(someC.HasValue);
             _ = someO.Value;
             _ = someC.Value;
 
@@ -47,7 +51,8 @@
         {
             Option<object> noneO = Option<object>.None();
             Option<object> noneC = new None<object>();
-            IsFalse(noneO.HasValue); IsFalse(noneC.HasValue);
+            IsFalse(noneO.HasValue);
+            IsFalse(noneC.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneO.Value);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneC.Value);
         }
@@ -56,7 +61,7 @@
         public void BindTest()
         {
             Option<string> someInit = Option<string>.Some((string)_fine);
-            Option<string> someNext = someInit.Bind(s  => string.Concat(s, " světe"));
+            Option<string> someNext = someInit.Bind(s => string.Concat(s, " světe"));
             Option<string> someLast = someNext.Bind(s => string.Concat(s, "!"));
             const string mid = _testString + " světe";
             const string end = mid + "!";
@@ -67,13 +72,14 @@
             Option<string> noneInit = Option<string>.None();
             Option<string> noneNext = noneInit.Bind(s => string.Concat(s, " světe"));
             Option<string> noneLast = noneNext.Bind(s => string.Concat(s, "!"));
-            IsFalse(noneNext.HasValue); IsFalse(noneLast.HasValue);
+            IsFalse(noneNext.HasValue);
+            IsFalse(noneLast.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneNext.Value);
             _ = ThrowsException<InvalidOperationException>(() => _ = noneLast.Value);
         }
 
         [TestMethod]
-        public void InspectTest()
+        public void InspectDualTest()
         {
             bool? outsideVar = null;
             void ResetVar() => outsideVar = null;
@@ -92,15 +98,88 @@
         }
 
         [TestMethod]
+        public void InspectSomeTest()
+        {
+            bool? outsideVar = null;
+            void ResetVar() => outsideVar = null;
+            void Some(object _) => outsideVar = true;
+
+            Option<string> some = Option<string>.Some((string)_fine);
+            some.Inspect(Some);
+            IsTrue(outsideVar);
+            ResetVar();
+
+            Option<object> none = Option<object>.None();
+            none.Inspect(Some);
+            IsNull(outsideVar);
+            ResetVar();
+        }
+
+        [TestMethod]
+        public void InspectNoneTest()
+        {
+            bool? outsideVar = null;
+            void ResetVar() => outsideVar = null;
+            void None() => outsideVar = false;
+
+            Option<string> some = Option<string>.Some((string)_fine);
+            some.Inspect(None);
+            IsNull(outsideVar);
+            ResetVar();
+
+            Option<object> none = Option<object>.None();
+            none.Inspect(None);
+            IsFalse(outsideVar);
+            ResetVar();
+        }
+
+        [TestMethod]
         public void CastTest()
         {
-            Option<object> some = _fine;
+            Option<string> some = (string)_fine;
             IsTrue(some.HasValue);
             _ = some.Value;
+            string? fine = (string?)some;
+            IsNotNull(fine);
+            AreEqual(_fine, fine);
+            AreEqual(_testString, fine);
 
-            Option<object> none = _faulty;
+            Option<string> none = (string?)_faulty!;
             IsFalse(none.HasValue);
             _ = ThrowsException<InvalidOperationException>(() => none.Value);
+            string? bad = (string?)none;
+            IsNull(bad);
+            AreEqual(_faulty, bad);
+            AreEqual(null, bad);
+        }
+
+        /// <summary>
+        /// Tests dark magic and interactions with <see langword="null"/>.
+        /// Used to test interaction with nullable <see cref="Option{T}"/> and its cast operators.
+        /// </summary>
+        [TestMethod]
+        public void NullResilienceTest()
+        {
+#pragma warning disable CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
+#pragma warning disable CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
+            Option<string> @null = null;
+            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            string? @out;
+            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+#pragma warning restore CS8600 // Literál s hodnotou null nebo s možnou hodnotou null se převádí na typ, který nemůže mít hodnotu null.
+
+            Option<string>? maybe = null;
+            _ = ThrowsException<NullReferenceException>(() => @null.HasValue);
+            @out = null;
+            _ = ThrowsException<InvalidCastException>(() => @out = (string?)@null!);
+
+            Option<Option<string>> possible = @null;
+            IsFalse(possible.HasValue);
+            _ = ThrowsException<InvalidOperationException>(() => possible.Value);
+            Option<string>? unwrap = (Option<string>?)possible;
+            AreEqual(maybe, unwrap);
+            AreEqual(null, unwrap);
+#pragma warning restore CS8602 // Přístup přes ukazatel k možnému odkazu s hodnotou null
         }
 
         [TestMethod]
@@ -157,21 +236,30 @@
             object obj = new();
             Option<object> objO = Option<object>.Some(obj);
             Option<object> objC = new Some<object>(obj);
-            IsTrue(objO.Equals((object)objC)); IsTrue(objC.Equals((object)objO));
-            IsTrue(objO.Equals(objC)); IsTrue(objC.Equals(objO));
-            IsFalse(objO != objC); IsFalse(objC != objO);
+            IsTrue(objO.Equals((object)objC));
+            IsTrue(objC.Equals((object)objO));
+            IsTrue(objO.Equals(objC));
+            IsTrue(objC.Equals(objO));
+            IsTrue(objO == objC);
+            IsFalse(objC != objO);
             // Value equality
             Option<object> strO = Option<object>.Some(_fine);
             Option<object> strC = new Some<object>(_testString);
-            IsTrue(strO.Equals((object)strC)); IsTrue(strC.Equals((object)strO));
-            IsTrue(strO.Equals(strC)); IsTrue(strC.Equals(strO));
-            IsFalse(strO != strC); IsFalse(strC != strO);
+            IsTrue(strO.Equals((object)strC));
+            IsTrue(strC.Equals((object)strO));
+            IsTrue(strO.Equals(strC));
+            IsTrue(strC.Equals(strO));
+            IsTrue(strO == strC);
+            IsFalse(strC != strO);
             // None equality
             Option<object> noneO = Option<object>.None();
             Option<object> noneC = new None<object>();
-            IsTrue(noneO.Equals((object)noneC)); IsTrue(noneC.Equals((object)noneO));
-            IsTrue(noneO.Equals(noneC)); IsTrue(noneC.Equals(noneO));
-            IsFalse(noneO != noneC); IsFalse(noneC != noneO);
+            IsTrue(noneO.Equals((object)noneC));
+            IsTrue(noneC.Equals((object)noneO));
+            IsTrue(noneO.Equals(noneC));
+            IsTrue(noneC.Equals(noneO));
+            IsTrue(noneO == noneC);
+            IsFalse(noneC != noneO);
         }
 
         [TestMethod]
@@ -181,7 +269,22 @@
             AreEqual(_fine.ToString(), some.ToString());
 
             Option<object> none = Option<object>.None();
-            AreEqual(_none, none.ToString());
+            AreEqual(null, none.ToString());
+
+            Option<object> nulling = Option<object>.Some(_nulling);
+            AreEqual(null, nulling.ToString());
+
+            Option<object> empty = Option<object>.Some(_empty);
+            AreEqual(_empty.ToString(), empty.ToString());
         }
     }
+
+    file sealed class NullingClass
+    {
+        public sealed override string? ToString() => null;
+    }
+
+#pragma warning disable S2094 // Classes should not be empty
+    file sealed class EmptyClass;
+#pragma warning restore S2094 // Classes should not be empty
 }
