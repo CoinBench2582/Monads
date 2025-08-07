@@ -27,12 +27,12 @@ jobs:
       run: |
         dotnet restore
         dotnet tool install --global dotnet-sonarscanner
-      # dotnet tool install --global dotnet-coverage
+        dotnet tool install --global dotnet-coverage
     - name: Begin analyzing
-      run: dotnet sonarscanner begin -k:"${{ vars.SONAR_PROJECT }}" -o:"${{ vars.SONAR_ORGANIZATION }}" -d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+      run: dotnet sonarscanner begin -k:"${{ vars.SONAR_PROJECT }}" -o:"${{ vars.SONAR_ORGANIZATION }}" -d:sonar.token="${{ secrets.SONAR_TOKEN }}" -d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
     - name: Build
       run: dotnet build --no-restore --no-incremental
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet coverage collect "dotnet test" -f xml -o "coverage.xml"
     - name: Finish analyzing
       run: dotnet sonarscanner end -d:sonar.token="${{ secrets.SONAR_TOKEN }}"
