@@ -2,8 +2,25 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <PropertyGroup>
+	<AnalysisLevel>latest-all</AnalysisLevel>
+	  <!--
+	<AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	  -->
+  </PropertyGroup>
+	  
+
+  <ItemGroup>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

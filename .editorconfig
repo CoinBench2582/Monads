@@ -9,3 +9,7 @@ dotnet_diagnostic.S125.severity = suggestion
 # S3925: "ISerializable" should be implemented correctly
 # ISerializable is obsolete, so no warning ever.
 dotnet_diagnostic.S3925.severity = none
+
+# CA1716: Identifikátory se nemají shodovat s klíčovými slovy.
+# Offends Option<T> naming, check manually.
+dotnet_diagnostic.CA1716.severity = none
