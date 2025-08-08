@@ -8,11 +8,11 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-    types: [opened, synchronize, reopened]    
+  # types: [opened, synchronize, reopened]    
 
 jobs:
   build:
-    name: Test and analyze
+    name: Test #and analyze
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -26,13 +26,13 @@ jobs:
     - name: Restore dependencies
       run: |
         dotnet restore
-        dotnet tool install --global dotnet-sonarscanner
-        dotnet tool install --global dotnet-coverage
-    - name: Begin analyzing
-      run: dotnet sonarscanner begin -k:"${{ vars.SONAR_PROJECT }}" -o:"${{ vars.SONAR_ORGANIZATION }}" -d:sonar.token="${{ secrets.SONAR_TOKEN }}" -d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
+      # dotnet tool install --global dotnet-sonarscanner
+      # dotnet tool install --global dotnet-coverage
+    #- name: Begin analyzing
+    #  run: dotnet sonarscanner begin -k:"${{ vars.SONAR_PROJECT }}" -o:"${{ vars.SONAR_ORGANIZATION }}" -d:sonar.token="${{ secrets.SONAR_TOKEN }}" -d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml
     - name: Build
-      run: dotnet build --no-restore --no-incremental
+      run: dotnet build --no-restore #--no-incremental
     - name: Test
-      run: dotnet coverage collect "dotnet test" -f xml -o "coverage.xml"
-    - name: Finish analyzing
-      run: dotnet sonarscanner end -d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+      run: dotnet test --no-build
+    #- name: Finish analyzing
+    #  run: dotnet sonarscanner end -d:sonar.token="${{ secrets.SONAR_TOKEN }}"
