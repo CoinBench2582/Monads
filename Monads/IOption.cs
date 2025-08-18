@@ -104,4 +104,33 @@
         /// <returns>An <see cref="IOption{T}"/> containing nothing</returns>
         static abstract IOption<T> None();
     }
+
+    /// <summary>
+    /// Defines a contract for creating instances of a specific <see cref="IOption{T}"/> type <see cref="TOption"/>.
+    /// </summary>
+    /// <remarks>
+    /// This interface provides static methods for creating <see cref="TOption"/> instances,
+    /// either with a value (using <see cref="Some(T)"/>)
+    /// or without a value (using <see cref="None()"/>).
+    /// </remarks>
+    /// <typeparam name="T">The type of the value that the <see cref="TOption"/> can contain.</typeparam>
+    /// <typeparam name="TOption">The type of the <see cref="IOption{T}"/> type that is created</typeparam>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3246:Generic type parameters should be co/contravariant when possible", Justification = "The type `T` is used in the return type, therefore cannot be contravariant.")]
+    public interface IOptionFactory<T, TOption>
+        where T : notnull
+        where TOption : IOption<T>
+    {
+        /// <summary>
+        /// Creates an <see cref="TOption"/> that contains a value of type <typeparamref name="T"/>
+        /// </summary>
+        /// <param name="value">value to store</param>
+        /// <returns>An <see cref="TOption"/> with some value of type <typeparamref name="T"/></returns>
+        static abstract TOption Some(T value);
+
+        /// <summary>
+        /// Creates an <see cref="TOption"/> with no underlying value
+        /// </summary>
+        /// <returns>An <see cref="TOption"/> containing nothing</returns>
+        static abstract TOption None();
+    }
 }
