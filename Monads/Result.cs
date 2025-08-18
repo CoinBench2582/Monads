@@ -73,10 +73,11 @@ namespace Monads
         /// Unwraps the result, throwing an exception with the given message if the result is an error
         /// </summary>
         /// <param name="message">The message to include in the exception</param>
-        /// <exception cref="Exception">The exception with the given message</exception>
+        /// <exception cref="ResultException">The exception with the given message</exception>
+        [Obsolete("Use `UnwrapError` or `Error` properties to get the underlying error instead.", false)]
         public void Expect(string message)
         {
-            if (IsError) throw new Exception(message);
+            if (IsError) throw new ResultException(message, _error);
         }
 
         /// <summary>
@@ -201,7 +202,7 @@ namespace Monads
         /// <returns>A new Result containing the result of the function if it executes successfully, otherwise a new Error containing the exception</returns>
         /// <typeparam name="T">The type of the value</typeparam>
         /// <typeparam name="TException">The type of the exception</typeparam>
-        /// <exception cref="Exception">An unexpected type of exception was thrown.</exception>
+        /// <exception cref="ResultException">An unexpected type of exception was thrown.</exception>
         public static Result<T, TException> TryExecute<T, TException>(this Func<T> f)
             where T : class
             where TException : Exception
@@ -216,7 +217,7 @@ namespace Monads
             }
             catch (Exception e)
             {
-                throw new Exception("Unexpected exception encountered", e);
+                throw new ResultException("Unexpected exception encountered", e);
             }
         }
     }

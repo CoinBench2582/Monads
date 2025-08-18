@@ -40,14 +40,17 @@ namespace Monads.Tests
         [TestMethod]
         public void ExpectTest()
         {
+#pragma warning disable CS0618 // Typ nebo èlen je zastaralý.
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             result.Expect("Error");
             AreSame(_testValue, result.UnwrapValue);
+#pragma warning restore CS0618 // Typ nebo èlen je zastaralý.
         }
 
         [TestMethod]
         public void ExpectErrorTest()
         {
+#pragma warning disable CS0618 // Typ nebo èlen je zastaralý.
             const string msg = "Error";
             Result<object, Exception> result = new Error<object, Exception>(_testError);
             try
@@ -58,7 +61,9 @@ namespace Monads.Tests
             catch (Exception ex)
             {
                 AreSame(msg, ex.Message);
+                AreSame(_testError, ex.InnerException);
             }
+#pragma warning restore CS0618 // Typ nebo èlen je zastaralý.
         }
 
         [TestMethod]
