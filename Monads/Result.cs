@@ -42,11 +42,32 @@ namespace Monads
         public bool IsError => _error is not null;
 
         /// <summary>
-        /// Unwraps the result, throwing an exception if the result is an error
+        /// Unwraps the result value, throwing an exception if the result is an error
         /// </summary>
-        /// <exception cref="TError">The error that was wrapped in the result</exception>
+        /// <exception cref="InvalidOperationException">thrown when the result is an error</exception>
         /// <returns>The value that was wrapped in the result</returns>
-        public TValue Unwrap => _value ?? throw _error!;
+        public TValue UnwrapValue => _value ?? throw new InvalidOperationException();
+
+        /// <summary>
+        /// Unwraps the result error, throwing an exception if the result is ok
+        /// </summary>
+        /// <exception cref="InvalidOperationException">thrown when the result is ok</exception>
+        /// <returns>The error that was wrapped in the result</returns>
+        public TError UnwrapError => _error ?? throw new InvalidOperationException();
+
+        /// <summary>
+        /// Returns an <see cref="Option{TValue}"/> containing the value.
+        /// Some if the result is ok, otherwise None.
+        /// </summary>
+        /// <returns>A Some containing the value if the result is ok, otherwise None.</returns>
+        public Option<TValue> Value => IsOk ? Option<TValue>.Some(_value) : Option<TValue>.None();
+
+        /// <summary>
+        /// Returns an <see cref="Option{TError}"/> containing the error.
+        /// Some if the result is Error, otherwise None.
+        /// </summary>
+        /// <returns>A Some containing the error if the result is an error, otherwise None.</returns>
+        public Option<TError> Error => IsError ? Option<TError>.Some(_error) : Option<TError>.None();
 
         /// <summary>
         /// Unwraps the result, throwing an exception with the given message if the result is an error
@@ -79,18 +100,6 @@ namespace Monads
         /// </returns>
         public bool IsErrorAnd(Func<TError, bool> predicate)
             => IsError && (predicate ?? throw new ArgumentNullException(nameof(predicate))).Invoke(_error);
-
-        /// <summary>
-        /// Returns an Option containing the value. Ok if the result is Ok, otherwise None.
-        /// </summary>
-        /// <returns>An Option containing the value if the result is Ok, otherwise None</returns>
-        public Option<TValue> Ok => IsOk ? new Some<TValue>(_value) : new None<TValue>();
-
-        /// <summary>
-        /// Returns an Option containing the error. Some if the result is Error, otherwise None.
-        /// </summary>
-        /// <returns>An Option containing the error if the result is Error, otherwise None</returns>
-        public Option<TError> Error => IsError ? new Some<TError>(_error) : new None<TError>();
 
         /// <summary>
         /// Maps the value of the result to a new value if the result is Ok, otherwise maps the error to a new Error

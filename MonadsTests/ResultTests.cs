@@ -26,22 +26,15 @@ namespace Monads.Tests
         public void UnwrapTest()
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            AreSame(_testValue, result.Unwrap);
+            AreSame(_testValue, result.UnwrapValue);
         }
 
         [TestMethod]
         public void UnwrapErrorTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            try
-            {
-                _ = result.Unwrap;
-                Fail("Expected exception was not thrown");
-            }
-            catch (Exception ex)
-            {
-                AreSame(_testError, ex);
-            }
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = result.UnwrapValue);
+            AreSame(_testError, result.UnwrapError);
         }
 
         [TestMethod]
@@ -49,7 +42,7 @@ namespace Monads.Tests
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             result.Expect("Error");
-            AreSame(_testValue, result.Unwrap);
+            AreSame(_testValue, result.UnwrapValue);
         }
 
         [TestMethod]
@@ -121,14 +114,14 @@ namespace Monads.Tests
         public void OkTest()
         {
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
-            AreEqual(_testValue, result.Ok.Value);
+            AreEqual(_testValue, result.Value.Value);
         }
 
         [TestMethod]
         public void OkNullTest()
         {
             Result<object, Exception> result = new Error<object, Exception>(_testError);
-            IsFalse(result.Ok.HasValue);
+            IsFalse(result.Value.HasValue);
         }
 
         [TestMethod]
@@ -151,7 +144,7 @@ namespace Monads.Tests
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Result<string, Exception> mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsOk);
-            AreNotSame(_testValue, mappedResult.Unwrap);
+            AreNotSame(_testValue, mappedResult.UnwrapValue);
         }
 
         [TestMethod]
@@ -160,15 +153,8 @@ namespace Monads.Tests
             Result<object, Exception> result = new Error<object, Exception>(_testError);
             Result<string, Exception> mappedResult = result.Map(v => v.ToString()!);
             IsTrue(mappedResult.IsError);
-            try
-            {
-                _ = mappedResult.Unwrap;
-                Fail("Expected exception was not thrown");
-            }
-            catch (Exception ex)
-            {
-                AreSame(_testError, ex);
-            }
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = mappedResult.UnwrapValue);
+            AreSame(_testError, mappedResult.UnwrapError);
         }
 
         [TestMethod]
@@ -210,16 +196,9 @@ namespace Monads.Tests
             const string message = "Mapped Error";
             Result<object, Exception> mappedResult = result.MapError(e => new Exception(message));
             IsTrue(mappedResult.IsError);
-            try
-            {
-                _ = mappedResult.Unwrap;
-                Fail("Expected exception was not thrown");
-            }
-            catch (Exception ex)
-            {
-                AreNotSame(_testError, ex);
-                AreSame(message, ex.Message);
-            }
+            _ = ThrowsExactly<InvalidOperationException>(() => _ = mappedResult.UnwrapValue);
+            AreNotSame(_testError, mappedResult.UnwrapError);
+            AreSame(message, mappedResult.UnwrapError.Message);
         }
 
         [TestMethod]
@@ -228,7 +207,7 @@ namespace Monads.Tests
             Result<object, Exception> result = new Ok<object, Exception>(_testValue);
             Result<object, Exception> mappedResult = result.MapError(e => new Exception("Mapped Error"));
             IsTrue(mappedResult.IsOk);
-            AreSame(_testValue, mappedResult.Unwrap);
+            AreSame(_testValue, mappedResult.UnwrapValue);
         }
 
         [TestMethod]
