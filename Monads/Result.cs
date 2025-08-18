@@ -5,19 +5,19 @@ namespace Monads
     /// The result may contain either a value or an exception.
     /// This is useful for composing operations that may fail, building a chain of operations that can be unwrapped at the end.
     /// </summary>
-    /// <typeparam name="T">The type of the value</typeparam>
+    /// <typeparam name="TValue">The type of the value</typeparam>
     /// <typeparam name="TError">The type of the exception</typeparam>
-    public class Result<T, TError>
-        where T : class
+    public class Result<TValue, TError>
+        where TValue : class
         where TError : Exception
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Nedeklarujte viditelná pole instance.", Justification = "Protected field is not externally visible.")]
-        protected readonly T? _value;
+        protected readonly TValue? _value;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Nedeklarujte viditelná pole instance.", Justification = "Protected field is not externally visible.")]
         protected readonly TError? _error;
 
-        protected Result(T value) => _value = value;
-        protected Result(TError exception) => _error = exception;
+        protected Result(TValue value) => _value = value ?? throw new ArgumentNullException(nameof(value));
+        protected Result(TError exception) => _error = exception ?? throw new ArgumentNullException(nameof(exception));
 
         /// <summary>
         /// Returns true if the result is Ok
@@ -46,7 +46,7 @@ namespace Monads
         /// </summary>
         /// <exception cref="TError">The error that was wrapped in the result</exception>
         /// <returns>The value that was wrapped in the result</returns>
-        public T Unwrap => _value ?? throw _error!;
+        public TValue Unwrap => _value ?? throw _error!;
 
         /// <summary>
         /// Unwraps the result, throwing an exception with the given message if the result is an error
@@ -66,7 +66,7 @@ namespace Monads
         /// <see langword="true"/> if the result is Ok and the value satisfies the predicate.
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool IsOkAnd(Func<T, bool> predicate)
+        public bool IsOkAnd(Func<TValue, bool> predicate)
             => IsOk && (predicate ?? throw new ArgumentNullException(nameof(predicate))).Invoke(_value);
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Monads
         /// Returns an Option containing the value. Ok if the result is Ok, otherwise None.
         /// </summary>
         /// <returns>An Option containing the value if the result is Ok, otherwise None</returns>
-        public Option<T> Ok => IsOk ? new Some<T>(_value) : new None<T>();
+        public Option<TValue> Ok => IsOk ? new Some<TValue>(_value) : new None<TValue>();
 
         /// <summary>
         /// Returns an Option containing the error. Some if the result is Error, otherwise None.
@@ -98,7 +98,7 @@ namespace Monads
         /// <param name="operation">The function to map the value to a new value</param>
         /// <typeparam name="TResult">The type of the new value</typeparam>
         /// <returns>A new Result containing the mapped value if the result is Ok, otherwise a new Error containing the mapped error</returns>
-        public Result<TResult, TError> Map<TResult>(Func<T, TResult> operation) where TResult : class
+        public Result<TResult, TError> Map<TResult>(Func<TValue, TResult> operation) where TResult : class
             => IsOk
                 ? new Ok<TResult, TError>((operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_value))
                 : new Error<TResult, TError>(_error);
@@ -110,7 +110,7 @@ namespace Monads
         /// <param name="default">The default value to return if the result is an error</param>
         /// <typeparam name="TResult">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the default value</returns>
-        public TResult MapOr<TResult>(Func<T, TResult> operation, TResult @default)
+        public TResult MapOr<TResult>(Func<TValue, TResult> operation, TResult @default)
             => IsOk ? (operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_value) : @default;
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Monads
         /// <param name="else">The function to map the error to a new value</param>
         /// <typeparam name="TResult">The type of the new value</typeparam>
         /// <returns>The mapped value if the result is Ok, otherwise the mapped error</returns>
-        public TResult MapOrElse<TResult>(Func<T, TResult> operation, Func<TError, TResult> @else)
+        public TResult MapOrElse<TResult>(Func<TValue, TResult> operation, Func<TError, TResult> @else)
             => IsOk
                 ? (operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_value)
                 : (@else ?? throw new ArgumentNullException(nameof(@else))).Invoke(_error);
@@ -131,17 +131,17 @@ namespace Monads
         /// <param name="operation">The function to map the error to a new error</param>
         /// <typeparam name="TResultError">The type of the new error</typeparam>
         /// <returns>A new Error containing the mapped error if the result is Error, otherwise a new Ok containing the mapped value</returns>
-        public Result<T, TResultError> MapError<TResultError>(Func<TError, TResultError> operation) where TResultError : Exception
+        public Result<TValue, TResultError> MapError<TResultError>(Func<TError, TResultError> operation) where TResultError : Exception
             => IsOk
-                ? new Ok<T, TResultError>(_value)
-                : new Error<T, TResultError>((operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_error));
+                ? new Ok<TValue, TResultError>(_value)
+                : new Error<TValue, TResultError>((operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_error));
 
         /// <summary>
         /// Executes an action on the value if the result is Ok
         /// </summary>
         /// <param name="operation">The action to execute on the value</param>
         /// <returns>Self</returns>
-        public Result<T, TError> Inspect(Action<T> operation)
+        public Result<TValue, TError> Inspect(Action<TValue> operation)
         {
             if (IsOk)
                 (operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_value);
@@ -153,7 +153,7 @@ namespace Monads
         /// </summary>
         /// <param name="operation">The action to execute on the error</param>
         /// <returns>Self</returns>
-        public Result<T, TError> InspectError(Action<TError> operation)
+        public Result<TValue, TError> InspectError(Action<TError> operation)
         {
             if (IsError)
                 (operation ?? throw new ArgumentNullException(nameof(operation))).Invoke(_error);
@@ -165,22 +165,22 @@ namespace Monads
     /// Represents a successful result
     /// </summary>
     /// <param name="value">Value to return</param>
-    /// <typeparam name="T">The type of the value</typeparam>
+    /// <typeparam name="TValue">The type of the value</typeparam>
     /// <typeparam name="TError">The type of the exception</typeparam>
-    public class Ok<T, TError>(T value)
-        : Result<T, TError>(value ?? throw new ArgumentNullException(nameof(value)))
-        where T : class
+    public sealed class Ok<TValue, TError>(TValue value)
+        : Result<TValue, TError>(value ?? throw new ArgumentNullException(nameof(value)))
+        where TValue : class
         where TError : Exception;
 
     /// <summary>
     /// Represents a failed result
     /// </summary>
     /// <param name="exception">Error to return</param>
-    /// <typeparam name="T">The type of the value</typeparam>
+    /// <typeparam name="TValue">The type of the value</typeparam>
     /// <typeparam name="TError">The type of the exception</typeparam>
-    public class Error<T, TError>(TError exception)
-        : Result<T, TError>(exception ?? throw new ArgumentNullException(nameof(exception)))
-        where T : class
+    public sealed class Error<TValue, TError>(TError exception)
+        : Result<TValue, TError>(exception ?? throw new ArgumentNullException(nameof(exception)))
+        where TValue : class
         where TError : Exception;
 
     public static class ResultExtensions
